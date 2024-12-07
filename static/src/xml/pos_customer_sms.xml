@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="SendSMSButton" owl="1">
+        <button class="button send-sms" t-on-click="onClick">
+            <i class="fa fa-comments-o"></i> Send SMS
+        </button>
+    </t>
+
+    <t t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('buttons')]" position="inside">
+            <SendSMSButton />
+        </xpath>
+    </t>
+</templates>

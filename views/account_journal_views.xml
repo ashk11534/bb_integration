@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_account_journal_list_inherited" model="ir.ui.view">
+            <field name="name">account.journal.tree.inherited</field>
+            <field name="model">account.journal</field>
+            <field name="priority" eval="8" />
+            <field name="inherit_id" ref="account.view_account_journal_tree" />
+            <field name="arch" type="xml">
+                <tree string="Account Journal">
+                    <field name="orcl_gl_code" optional="show" />
+                    <field name="oracle_pointer" optional="show" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_account_journal_form_inherited" model="ir.ui.view">
+            <field name="name">account.journal.form.inherited</field>
+            <field name="model">account.journal</field>
+            <field name="priority">2</field>
+            <field name="inherit_id" ref="account.view_account_journal_form" />
+            <field name="arch" type="xml">
+                <xpath
+                    expr="//field[@name='type']"
+                    position="after">
+                    <field name="orcl_gl_code" />
+                    <field name="oracle_pointer" />
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

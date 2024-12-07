@@ -1,0 +1,119 @@
+.bb_pos_text_bold {
+    font-weight: bold;
+}
+.bb-pos-receipt-header {
+    text-align: center;
+
+    .bb-header {
+        font-size: 12px;
+        font-weight: bold;
+    }
+}
+
+.bb-pos-customer-info, .bb-pos-contact {
+    font-size: 10px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.bb_pos_footer {
+    font-size: 9px !important;
+
+    .bb_pos_footer_p {
+        font-size: 8px !important;
+    }
+
+    .bb_pos_footer_copyright {
+        margin-top: 10px;
+        text-align: center;
+    }
+}
+
+.bb_pos_title {
+    font-size: 10px !important;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.bb-pos-payment-details {
+    margin-top: 10px;
+    font-size: 10px !important;
+}
+
+.bb-pos-amt-details {
+    margin-top: 10px;
+    font-size: 10px !important;
+}
+
+.payment-lines-receipt {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+
+    thead {
+        tr {
+            th {
+                font-weight: bold;
+                border-top: 1px solid #000;
+                border-bottom: 1px solid #000;
+                padding: 8px;
+            }
+        }
+    }
+    tbody {
+        tr {
+            td {
+                padding: 8px;
+                &.pos-receipt-right-align {
+                    text-align: right;
+                }
+            }
+        }
+    }
+}
+
+.bb-pos-orderlines {
+    margin-top: 10px;
+}
+
+.order-lines-receipt {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+
+    thead {
+        tr {
+            th {
+                font-weight: bold;
+                border-top: 1px solid #000;
+                border-bottom: 1px solid #000;
+                padding: 8px;
+            }
+        }
+    }
+    tbody {
+        tr {
+            td {
+                padding: 8px;
+                &.pos-receipt-right-align {
+                    text-align: right;
+                }
+            }
+        }
+        tr:last-child {
+            td {
+                font-weight: bold;
+                border-top: 1px solid #000;
+                border-bottom: 1px solid #000;
+            }
+        }
+    }
+}
+
+.send-sms {
+    width: 100%;
+    text-align: center;
+}

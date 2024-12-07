@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Inherit the original view -->
+        <record id="view_immediate_transfer_inherited" model="ir.ui.view">
+            <field name="name">stock.immediate.transfer.view.form</field>
+            <field name="model">stock.immediate.transfer</field>
+            <field name="inherit_id" ref="stock.view_immediate_transfer"/>
+            <field name="arch" type="xml">
+                <!-- Locate the specific <p> tag and change its content -->
+                <xpath expr="//p" position="replace">
+                    <p>You have not recorded <i>done</i> quantities yet, by clicking on <i>apply</i>.System will process all the quantities.</p>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

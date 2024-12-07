@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" owl="1">
+        <xpath expr="//img[@class='pos-receipt-logo']" position="replace">
+            <div class="bb-header">BUILD BEST</div>
+        </xpath>
+
+        <xpath expr="//div[@class='cashier']" position="after">
+            <div>Customer:
+                <t t-esc="receipt.client.name"/>
+            </div>
+            <div>Mobile:
+                <t t-if="receipt.client.mobile != false">
+                    <t t-esc="receipt.client.mobile"/>
+                </t>
+                <t t-else="">
+                    -
+                </t>
+            </div>
+        </xpath>
+
+        <xpath expr="//div[@class='orderlines']" position="replace">
+            <table class="order-lines-receipt">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>MRP</th>
+                        <th>Qty</th>
+                        <th>Unit</th>
+                        <th>Disc.</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="receipt.orderlines" t-as="line" t-key="line.id">
+                        <tr>
+                            <td>
+                                <t t-esc="line.product_name_wrapped[0]" />
+                            </td>
+                            <td>
+                                <t t-esc="line.price_display_one" />
+                            </td>
+                            <td>
+                                <t t-esc="Math.round(line.quantity * Math.pow(10, env.pos.dp['Product Unit of Measure'])) / Math.pow(10, env.pos.dp['Product Unit of Measure'])" />
+                            </td>
+                            <td>
+                                <t t-esc="line.unit_name" />
+                            </td>
+                            <td>
+                                <t t-if="line.discount !== 0">
+                                    <t t-esc="line.discount" />%
+                                </t>
+                                <t t-else="">
+                                    0%
+                                </t>
+                            </td>
+                            <td class="pos-receipt-right-align">
+                                <t t-esc="env.pos.format_currency_no_symbol(line.price_display)" />
+                            </td>
+                        </tr>
+                    </t>
+                        <tr>
+                            <td colspan="5">Sub Total</td>
+                            <td class="pos-receipt-right-align"><t t-esc="env.pos.format_currency(receipt.total_with_tax)"/></td>
+                        </tr>
+                </tbody>
+            </table>
+        </xpath>
+
+        <!-- removing dashes for total -->
+         <xpath expr="//div[@class='pos-receipt-right-align']" position="replace">
+            <!-- full replace with blank -->
+         </xpath>
+        <!-- removing totals and others -->
+        <xpath expr="//div[@class='pos-receipt-amount']" position="replace">
+            <!-- nothing total out -->
+        </xpath>
+        
+    </t>
+</templates>

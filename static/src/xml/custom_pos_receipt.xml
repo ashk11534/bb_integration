@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[@class='pos-receipt']" position="replace">
+            <div class="pos-receipt">
+                <div class="bb-pos-receipt-header">
+                    <div class="bb-header">BUILD BEST</div>
+                    <div class="bb-pos-contact"><t t-esc="receipt.company.full_address" /></div>
+                    <div class="bb-pos-contact">
+                        <t t-if="receipt.company.phone">
+                            Hotline: <t t-esc="receipt.company.phone" />
+                        </t>
+                    </div>
+                </div>
+    
+                <hr />
+    
+                <div class="bb-pos-customer-info">
+                    <div class="row">
+                        <div class="bb_pos_text_bold"><t t-esc="receipt.name" /></div>
+                        <div>
+                            <t t-if="receipt.date.localestring">
+                                <div><t t-esc="receipt.date.localestring" /></div>
+                            </t>
+                            <t t-else="">
+                                <div><t t-esc="receipt.date.validation_date" /></div>
+                            </t>
+                        </div>
+                    </div>
+                    <div>Name: 
+                        <t t-if="receipt.client.name">
+                            <t t-esc="receipt.client.name"/>
+                        </t>
+                        <t t-else="">
+                            ---
+                        </t>
+                    </div>
+                    <div>Mobile: 
+                        <t t-if="receipt.client.mobile">
+                            <t t-esc="receipt.client.mobile"/>
+                        </t>
+                        <t t-else="">
+                            ---
+                        </t>
+                    </div>
+                    <t t-if="receipt.cashier">
+                        <div class="cashier">
+                            <div>Served by: <t t-esc="receipt.cashier" /></div>
+                        </div>
+                    </t>
+                </div>
+    
+                <div class="bb-pos-orderlines">
+                    <p class="bb_pos_title">Order Lines:</p>
+                    <table class="order-lines-receipt">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>MRP</th>
+                                <th>Qty</th>
+                                <th>Unit</th>
+                                <th>Disc.</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="receipt.orderlines" t-as="line" t-key="line.id">
+                                <tr>
+                                    <td>
+                                        <t t-esc="line.product_name_wrapped[0]" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="line.price_display_one" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="Math.round(line.quantity * Math.pow(10, env.pos.dp['Product Unit of Measure'])) / Math.pow(10, env.pos.dp['Product Unit of Measure'])" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="line.unit_name" />
+                                    </td>
+                                    <td>
+                                        <t t-if="line.discount !== 0">
+                                            <t t-esc="line.discount" />%
+                                        </t>
+                                        <t t-else="">
+                                            0%
+                                        </t>
+                                    </td>
+                                    <td class="pos-receipt-right-align">
+                                        <t t-esc="env.pos.format_currency_no_symbol(line.price_display)" />
+                                    </td>
+                                </tr>
+                            </t>
+                                <tr>
+                                    <td colspan="5">Sub Total</td>
+                                    <td class="pos-receipt-right-align"><t t-esc="env.pos.format_currency_no_symbol(receipt.total_with_tax)"/></td>
+                                </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bb-pos-amt-details">
+                    <div class="row">
+                        <div class="col">Net Amount</div>
+                        <div class="col"><t t-esc="env.pos.format_currency_no_symbol(receipt.total_with_tax)" /></div>
+                    </div>
+                    <div class="row">
+                        <div class="col">Discount Amount</div>
+                        <div class="col"><t t-esc="env.pos.format_currency_no_symbol(receipt.total_discount)" /></div>
+                    </div>
+                    <div class="row">
+                        <div class="col">Paid Amount</div>
+                        <div class="col"><t t-esc="env.pos.format_currency_no_symbol(receipt.total_rounded)" /></div>
+                    </div>
+                    <div class="row">
+                        <div class="col">Change Amount</div>
+                        <div class="col"><t t-esc="env.pos.format_currency_no_symbol(receipt.change)" /></div>
+                    </div>
+                </div>
+
+                <div class="bb-pos-payment-details">
+                    <p class="bb_pos_title">Payment Lines:</p>
+                    <table class="payment-lines-receipt">
+                        <thead>
+                            <tr>
+                                <th>DESCRIPTION</th>
+                                <th>AMOUNT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="receipt.paymentlines" t-as="line" t-key="line.cid">
+                                <tr>
+                                    <td>
+                                        <t t-esc="line.name" />
+                                    </td>
+                                    <td>
+                                        <span t-esc="env.pos.format_currency_no_symbol(line.amount)"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bb_pos_footer">
+                    <p class="bb_pos_footer_p">*Product cannot be refunded for cash.</p>
+                    <div class="row">
+                        <div class="col"><p class="bb_pos_footer_p">www.buildbest.com</p></div>
+                        <div class="col"><p class="bb_pos_footer_p">facebook.com/buildbest</p></div>
+                    </div>
+                    <div class="bb_pos_footer_copyright">Powered By @Walton Digi-tech Industries Ltd.</div>
+                </div>
+            </div>
+        </xpath>       
+    </t>
+</templates>

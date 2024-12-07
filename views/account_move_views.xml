@@ -1,0 +1,15 @@
+<odoo>
+    <data>
+        <record id="view_account_move_tree_inherited" model="ir.ui.view">
+            <field name="name">account.move.tree.inherited</field>
+            <field name="model">account.move</field>
+            <field eval="101" name="priority"/>
+            <field name="inherit_id" ref="account.view_move_tree" />
+            <field name="arch" type="xml">
+                <tree string="Journal Entries" sample="1" decoration-info="state == 'draft'" expand="context.get('expand', False)">
+                    <field name="sent_to_oracle" optional="show"/>
+                </tree>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,138 @@
+<odoo>
+    <data>
+        <record id="cron_send_sale_stock_movement" model="ir.cron">
+            <field name="name">BB: Send Sale Stock Movement Status to PwC</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_inventory_transaction"/>
+            <field name="active" eval="True"/>
+            <field name="priority">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="interval_number">10</field>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="state">code</field>
+            <field name="code">model.send_inventory_update_of_sold_items()</field>
+        </record>
+
+        <record id="cron_send_sale_stock_movement_refund" model="ir.cron">
+            <field name="name">BB: Send Refund Stock Movement Status to PwC</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_inventory_transaction"/>
+            <field name="active" eval="True"/>
+            <field name="priority">7</field>
+            <field name="interval_type">days</field>
+            <field name="interval_number">1</field>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
+            <field name="state">code</field>
+            <field name="code">model.send_refund_update_to_pwc()</field>
+        </record>
+
+        <!-- Collection Journals -->
+        <record id="cron_send_journal_entry_to_oracle" model="ir.cron">
+            <field name="name">BB: Post Payment Journals to PwC</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_sync_journal"/>
+            <field name="active" eval="True"/>
+            <field name="priority">2</field>
+            <field name="interval_type">days</field>
+            <field name="interval_number">1</field>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
+            <field name="state">code</field>
+            <field name="code">model.send_payment_journals()</field>
+        </record>
+
+        <!-- sales Revenue and Account Receivable Scheduler -->
+        <record id="cron_send_sales_revenue_account_receivables" model="ir.cron">
+            <field name="name">BB: Send Sales Revenue And Account Receivables to Oracle</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_sync_journal"/>
+            <field name="active" eval="True"/>
+            <field name="priority">3</field>
+            <field name="interval_type">days</field>
+            <field name="interval_number">1</field>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
+            <field name="state">code</field>
+            <field name="code">model.send_sales_revenue()</field>
+        </record>
+
+        <!-- Settlement Advance Collection Scheduler -->
+        <record id="cron_send_advance_collection_settlements" model="ir.cron">
+            <field name="name">BB: Send Advance Collection Settlement to Oracle</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_sync_journal"/>
+            <field name="active" eval="True"/>
+            <field name="priority">4</field>
+            <field name="interval_type">days</field>
+            <field name="interval_number">1</field>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
+            <field name="state">code</field>
+            <field name="code">model.send_misc_advance_settlement()</field>
+        </record>
+        
+        <!-- Settlement Advance Collection Scheduler -->
+        <record id="cron_send_bill_settlements" model="ir.cron">
+            <field name="name">BB: Send Bill Settlement to Oracle</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_sync_journal"/>
+            <field name="active" eval="True"/>
+            <field name="priority">5</field>
+            <field name="interval_type">days</field>
+            <field name="interval_number">1</field>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
+            <field name="state">code</field>
+            <field name="code">model.send_advance_settlement_bill()</field>
+        </record>
+
+
+        <!-- Settlement Advance Refund For Invoice Scheduler -->
+        <record id="cron_send_advance_refund_settlement" model="ir.cron">
+            <field name="name">BB: Send Advance Refund Settlement to Oracle</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_sync_journal"/>
+            <field name="active" eval="True"/>
+            <field name="priority">6</field>
+            <field name="interval_type">days</field>
+            <field name="interval_number">1</field>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
+            <field name="state">code</field>
+            <field name="code">model.send_advance_refund_settlement()</field>
+        </record>
+
+
+        <!-- Settlement Advance Refund For Invoice Scheduler -->
+        <record id="cron_send_advance_refund_settlement" model="ir.cron">
+            <field name="name">BB: Update Journal Status for Oracle</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_sync_journal"/>
+            <field name="active" eval="True"/>
+            <field name="priority">5</field>
+            <field name="interval_type">days</field>
+            <field name="interval_number">1</field>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:59:01')"/>
+            <field name="state">code</field>
+            <field name="code">model.update_ledger_status()</field>
+        </record>
+
+        <!-- GET ITEM SCHEDULER -->
+        <record id="cron_get_item_scheduler" model="ir.cron">
+            <field name="name">BB: Get Items from Oracle</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_inventory_transaction"/>
+            <field name="active" eval="True"/>
+            <field name="priority">2</field>
+            <field name="interval_type">minutes</field>
+            <field name="interval_number">5</field>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d %H:%M:01')"/>
+            <field name="state">code</field>
+            <field name="code">model.add_new_products()</field>
+        </record>
+    </data>
+</odoo>
