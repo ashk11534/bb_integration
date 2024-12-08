@@ -84,13 +84,15 @@ class ExtendedAccountMove(models.Model):
         """Fetch the Payment Journals for Cash, Bank including Advance Collections"""
         query = """
                 select
-                    -- am.id,
+                    am.id as journal_id,
                     rc.org_name as company_name,
-                    -- am.name as order_reference,
+                    am.name as order_reference,
                     am.date as txn_date,
                     aj.name as journal_name,
                     aj.type as journal_type,
                     aj.oracle_pointer,
+                    aa.code as journal_item_code,
+                    SUM(aml.quantity) AS transaction_qty,
                     SUM(aml.debit) AS total_debit_amount,
                     SUM(aml.credit) AS total_credit_amount
                 from
@@ -101,19 +103,22 @@ class ExtendedAccountMove(models.Model):
                     rc.id = am.company_id
                 join 
                     account_move_line aml ON aml.move_id = am.id
+                join account_account aa ON
+                    aa.id = aml.account_id 
                 where
                     aj.type in ('cash', 'bank')
                     and am.state in ('posted')
                     and am.date <= %s
                     and am.sent_to_oracle = FALSE
                 group by
-                    -- am.id,
+                    am.id,
                     rc.org_name,
-                    -- am.name,
+                    am.name,
                     am.date,
                     aj.name,
                     aj.type,
-                    aj.oracle_pointer
+                    aj.oracle_pointer,
+                    aa.code
                 """
         self.env.cr.execute(query, (date,))
         return self.env.cr.dictfetchall()

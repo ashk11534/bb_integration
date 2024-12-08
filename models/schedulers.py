@@ -205,7 +205,8 @@ class JournalEntryTransaction(models.Model):
 
         journals = model.get_payment_journals(today)
 
-        print(journals)
+        for j in journals:
+            print(j.get('journal_id'))
 
         sales_journals = []
         advance_journals = []
@@ -278,6 +279,7 @@ class JournalEntryTransaction(models.Model):
 
             sales_return.extend(credit_lines)
             payload = self.serializer.serialize(sales_return)
+
             RequestSender(self.journal_api_url, payload=payload).post()
 
         if len(receivable_accounts):
@@ -292,6 +294,7 @@ class JournalEntryTransaction(models.Model):
 
             receivable_accounts.extend(credit_lines)
             payload = self.serializer.serialize(receivable_accounts)
+
             RequestSender(self.journal_api_url, payload=payload).post()
 
         if len(return_discount):
@@ -306,6 +309,9 @@ class JournalEntryTransaction(models.Model):
 
             return_discount.extend(credit_lines)
             payload = self.serializer.serialize(return_discount)
+
+            print('Sales discount', payload)
+
             RequestSender(self.journal_api_url, payload=payload).post()
 
         if len(receivable_accounts_refund_sales):
@@ -320,6 +326,7 @@ class JournalEntryTransaction(models.Model):
 
             receivable_accounts_refund_sales.extend(credit_lines)
             payload = self.serializer.serialize(receivable_accounts_refund_sales)
+
             RequestSender(self.journal_api_url, payload=payload).post()
 
         # unapplied receipts/ Collections
@@ -384,7 +391,6 @@ class JournalEntryTransaction(models.Model):
             payload = self.serializer.serialize(refund_cash)
             RequestSender(self.journal_api_url, payload=payload).post()
 
-        print('Sales discount', sales_discount)
 
         _logger.info(f"Executed PwC Cron(send_payment_journals) at {self.serializer.timeit()}")
 
