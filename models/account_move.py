@@ -1,5 +1,11 @@
 from odoo import models, fields
+from ..serializers import ItemTxnSerializer, JournalSerializer
+from ..utils import RequestSender
+from odoo.http import request as req
 
+BASE_URL_PWC = "https://ebs-uat.nmohammadgroup.com:4460"
+journal_api_url = f"{BASE_URL_PWC}/webservices/rest/pos_details/pos_journal_import/?"
+serializer = JournalSerializer()
 
 class ExtendedAccountMove(models.Model):
     _inherit = "account.move"
@@ -323,3 +329,49 @@ class ExtendedAccountMove(models.Model):
                 and sent_to_oracle is not true
         """
         self.env.cr.execute(query)
+
+    def action_post(self):
+        res = super(ExtendedAccountMove, self).action_post()
+
+        for move in self:
+            if move.state == 'posted':
+                journal_item_sales_dis = move.line_ids[0]
+                # print(journal_item_sales_dis.debit, journal_item_sales_dis.credit, req.env.company.name)
+
+                input_payload = {
+                    'oracle_pointer': 'SALES_DIS',
+                    'total_credit_amount': journal_item_sales_dis.credit,
+                    'total_debit_amount': journal_item_sales_dis.debit,
+                    'txn_date': self.invoice_date,
+                    'company_name': move.journal_id.company_id.name,
+                    'journal_id': f'JOURNAL-{move.journal_id.id}',
+                    'order_reference': move.invoice_origin,
+                    'invoice_reference': self.name
+                }
+
+                payload = serializer.serialize([input_payload])
+                print(payload)
+                if not self.sent_to_oracle and self.discount_rate > 0:
+                    RequestSender(journal_api_url, payload=payload).post()
+
+                journal_item_receivable_accounts = move.line_ids[-1]
+
+                input_payload = {
+                    'oracle_pointer': 'RETURN_SALES_REC',
+                    'total_credit_amount': journal_item_receivable_accounts.credit,
+                    'total_debit_amount': journal_item_receivable_accounts.debit,
+                    'txn_date': self.invoice_date,
+                    'company_name': move.journal_id.company_id.name,
+                    'journal_id': f'JOURNAL-{move.journal_id.id}',
+                    'order_reference': move.invoice_origin,
+                    'invoice_reference': self.name
+                }
+
+                payload = serializer.serialize([input_payload])
+                print(payload)
+                if not self.sent_to_oracle:
+                    res = RequestSender(journal_api_url, payload=payload).post()
+                    if res != False:
+                        self.sent_to_oracle = True
+
+        return res

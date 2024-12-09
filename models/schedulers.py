@@ -265,6 +265,7 @@ class JournalEntryTransaction(models.Model):
 
             sales_discount.extend(credit_lines)
             payload = self.serializer.serialize(sales_discount)
+            print(payload)
             RequestSender(self.journal_api_url, payload=payload).post()
 
         if len(sales_return):
