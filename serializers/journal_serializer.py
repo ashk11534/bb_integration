@@ -30,13 +30,9 @@ class JournalSerializer(Serializer):
 
             response["P_INPJLTABTYP"][f"P_INPJLTABTYP_ITEM{i+1}"] = {
                 "ENTITY_NAME": v.get("company_name"),
-                # "INVENTORY_ORGANIZATION": "BMU",
-                # "SUBINVENTORY": "BMU-MUR-01",
-                # "ITEM_CODE": v.get("journal_item_code", 'NA'),
                 "TRX_DATE": self.format_date(v.get("txn_date")),
                 "CR_AMOUNT": str(v.get("total_credit_amount", 0)),
                 "DR_AMOUNT": str(v.get("total_debit_amount", 0)),
-                # "TRANSACTION_QUATITY": str(v.get("transaction_qty", 0)),
                 "TRANSACTION_TYPE": v.get("oracle_pointer"),
                 "DESCRIPTION": f"RefNo: {v.get('order_reference', 'NA')}",
                 "ATTRIBUTE1": v.get('journal_id', 'NA'),

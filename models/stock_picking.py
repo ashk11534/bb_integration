@@ -25,9 +25,9 @@ class ExtendedStockPicking(models.Model):
             for move in self.move_ids:
 
                 orders.append({
-                    'org_unit': 'BMU',
+                    'org_unit': 'Build Best',
                     'src_loc': 'BMU-MUR-01',
-                    'item_code': move.product_id.name,
+                    'item_code': move.product_id.default_code,
                     'sold_in_puom': move.product_uom_qty,
                     'oracle_pointer': 'RETURN_SALES_REV',
                     'txn_date': self.scheduled_date,

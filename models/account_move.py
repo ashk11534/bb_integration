@@ -345,7 +345,7 @@ class ExtendedAccountMove(models.Model):
                     'total_credit_amount': journal_item_sales_dis.credit,
                     'total_debit_amount': journal_item_sales_dis.debit,
                     'txn_date': self.invoice_date,
-                    'company_name': 'BMU',
+                    'company_name': 'Build Best',
                     'journal_id': f'JOURNAL-{move.journal_id.id}',
                     'order_reference': move.invoice_origin,
                     'invoice_reference': self.name
@@ -363,7 +363,7 @@ class ExtendedAccountMove(models.Model):
                     'total_credit_amount': journal_item_receivable_accounts.credit,
                     'total_debit_amount': journal_item_receivable_accounts.debit,
                     'txn_date': self.invoice_date,
-                    'company_name': 'BMU',
+                    'company_name': 'Build Best',
                     'journal_id': f'JOURNAL-{move.journal_id.id}',
                     'order_reference': move.invoice_origin,
                     'invoice_reference': self.name
@@ -389,7 +389,7 @@ class ExtendedAccountMove(models.Model):
                     'total_credit_amount': journal_item_sales_dis.credit,
                     'total_debit_amount': journal_item_sales_dis.debit,
                     'txn_date': self.invoice_date,
-                    'company_name': 'BMU',
+                    'company_name': 'Build Best',
                     'journal_id': f'JOURNAL-{move.journal_id.id}',
                     'order_reference': move.invoice_origin,
                     'invoice_reference': self.name
@@ -407,7 +407,7 @@ class ExtendedAccountMove(models.Model):
                     'total_credit_amount': journal_item_receivable_accounts.credit,
                     'total_debit_amount': journal_item_receivable_accounts.debit,
                     'txn_date': self.invoice_date,
-                    'company_name': 'BMU',
+                    'company_name': 'Build Best',
                     'journal_id': f'JOURNAL-{move.journal_id.id}',
                     'order_reference': move.invoice_origin,
                     'invoice_reference': move.ref
