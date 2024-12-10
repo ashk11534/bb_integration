@@ -369,7 +369,7 @@ class ExtendedAccountMove(models.Model):
 
                 payload = serializer.serialize([input_payload])
                 print(payload)
-                if not self.sent_to_oracle:
+                if not self.sent_to_oracle and self.discount_rate > 0:
                     res = RequestSender(journal_api_url, payload=payload).post()
                     if res != False:
                         self.sent_to_oracle = True
