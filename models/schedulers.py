@@ -212,11 +212,6 @@ class JournalEntryTransaction(models.Model):
         advance_journals = []
         refund_sales = []
         refund_cash = []
-        sales_discount = []
-        sales_return = []
-        receivable_accounts = []
-        return_discount = []
-        receivable_accounts_refund_sales = []
 
         for journal in journals:
             if journal["oracle_pointer"].startswith("ADV"):
@@ -229,106 +224,9 @@ class JournalEntryTransaction(models.Model):
                 journal["total_credit_amount"] = 0.0
                 refund_cash.append(journal)
 
-            elif journal["oracle_pointer"].startswith("SALES_DIS"):
-                journal["total_credit_amount"] = 0.0
-                sales_discount.append(journal)
-
-            elif journal["oracle_pointer"].startswith("RETURN_SALES_REV"):
-                journal["total_credit_amount"] = 0.0
-                sales_return.append(journal)
-
-            elif journal["oracle_pointer"].startswith("RETURN_SALES_REC"):
-                journal["total_credit_amount"] = 0.0
-                receivable_accounts.append(journal)
-
-            elif journal["oracle_pointer"].startswith("RETURN_SALES_DIS"):
-                journal["total_credit_amount"] = 0.0
-                return_discount.append(journal)
-
-            elif journal["oracle_pointer"].startswith("REFUND_SALES_REC"):
-                journal["total_credit_amount"] = 0.0
-                receivable_accounts_refund_sales.append(journal)
-
             else:
                 journal["total_credit_amount"] = 0.0
                 sales_journals.append(journal)
-
-        if len(sales_discount):
-            credit_lines = []
-            for discount in sales_discount:
-                line = discount.copy()
-                debit_amount = line.get("total_debit_amount", 0)
-                line["oracle_pointer"] = "SALES_DIS"
-                line["total_credit_amount"] = debit_amount
-                line["total_debit_amount"] = 0.0
-                credit_lines.append(line)
-
-            sales_discount.extend(credit_lines)
-            payload = self.serializer.serialize(sales_discount)
-            print(payload)
-            RequestSender(self.journal_api_url, payload=payload).post()
-
-        if len(sales_return):
-            credit_lines = []
-            for s_return in sales_return:
-                line = s_return.copy()
-                debit_amount = line.get("total_debit_amount", 0)
-                line["oracle_pointer"] = "RETURN_SALES_REV"
-                line["total_credit_amount"] = debit_amount
-                line["total_debit_amount"] = 0.0
-                credit_lines.append(line)
-
-            sales_return.extend(credit_lines)
-            payload = self.serializer.serialize(sales_return)
-
-            RequestSender(self.journal_api_url, payload=payload).post()
-
-        if len(receivable_accounts):
-            credit_lines = []
-            for r_account in receivable_accounts:
-                line = r_account.copy()
-                debit_amount = line.get("total_debit_amount", 0)
-                line["oracle_pointer"] = "RETURN_SALES_REC"
-                line["total_credit_amount"] = debit_amount
-                line["total_debit_amount"] = 0.0
-                credit_lines.append(line)
-
-            receivable_accounts.extend(credit_lines)
-            payload = self.serializer.serialize(receivable_accounts)
-
-            RequestSender(self.journal_api_url, payload=payload).post()
-
-        if len(return_discount):
-            credit_lines = []
-            for r_discount in return_discount:
-                line = r_discount.copy()
-                debit_amount = line.get("total_debit_amount", 0)
-                line["oracle_pointer"] = "RETURN_SALES_DIS"
-                line["total_credit_amount"] = debit_amount
-                line["total_debit_amount"] = 0.0
-                credit_lines.append(line)
-
-            return_discount.extend(credit_lines)
-            payload = self.serializer.serialize(return_discount)
-
-            print('Sales discount', payload)
-
-            RequestSender(self.journal_api_url, payload=payload).post()
-
-        if len(receivable_accounts_refund_sales):
-            credit_lines = []
-            for r_account_ref_sales in receivable_accounts_refund_sales:
-                line = r_account_ref_sales.copy()
-                debit_amount = line.get("total_debit_amount", 0)
-                line["oracle_pointer"] = "REFUND_SALES_REC"
-                line["total_credit_amount"] = debit_amount
-                line["total_debit_amount"] = 0.0
-                credit_lines.append(line)
-
-            receivable_accounts_refund_sales.extend(credit_lines)
-            payload = self.serializer.serialize(receivable_accounts_refund_sales)
-
-            RequestSender(self.journal_api_url, payload=payload).post()
 
         # unapplied receipts/ Collections
         if len(sales_journals):
