@@ -335,18 +335,16 @@ class ExtendedAccountMove(models.Model):
 
         for move in self:
 
-            print(move.ref.startswith('Reversal'))
-
             if move.state == 'posted' and not self.sent_to_oracle:
                 journal_item_sales_dis = move.line_ids[0]
 
                 input_payload = {
                     'oracle_pointer': 'SALES_DIS',
-                    'total_credit_amount': journal_item_sales_dis.credit,
+                    'total_credit_amount': journal_item_sales_dis.debit,
                     'total_debit_amount': journal_item_sales_dis.debit,
                     'txn_date': self.invoice_date,
                     'company_name': 'Build Best',
-                    'journal_id': f'JOURNAL-{move.journal_id.id}',
+                    'journal_id': move.journal_id.id,
                     'order_reference': move.invoice_origin,
                     'invoice_reference': self.name
                 }
@@ -360,11 +358,11 @@ class ExtendedAccountMove(models.Model):
 
                 input_payload = {
                     'oracle_pointer': 'RETURN_SALES_REC',
-                    'total_credit_amount': journal_item_receivable_accounts.credit,
+                    'total_credit_amount': journal_item_receivable_accounts.debit,
                     'total_debit_amount': journal_item_receivable_accounts.debit,
                     'txn_date': self.invoice_date,
                     'company_name': 'Build Best',
-                    'journal_id': f'JOURNAL-{move.journal_id.id}',
+                    'journal_id': move.journal_id.id,
                     'order_reference': move.invoice_origin,
                     'invoice_reference': self.name
                 }
@@ -378,19 +376,17 @@ class ExtendedAccountMove(models.Model):
 
             if move.ref.startswith('Reversal'):
 
-                print('Hmm')
-
                 self.sent_to_oracle = False
 
                 journal_item_sales_dis = move.line_ids[0]
 
                 input_payload = {
                     'oracle_pointer': 'RETURN_SALES_DIS',
-                    'total_credit_amount': journal_item_sales_dis.credit,
+                    'total_credit_amount': journal_item_sales_dis.debit,
                     'total_debit_amount': journal_item_sales_dis.debit,
                     'txn_date': self.invoice_date,
                     'company_name': 'Build Best',
-                    'journal_id': f'JOURNAL-{move.journal_id.id}',
+                    'journal_id': move.journal_id.id,
                     'order_reference': move.invoice_origin,
                     'invoice_reference': self.name
                 }
@@ -404,11 +400,11 @@ class ExtendedAccountMove(models.Model):
 
                 input_payload = {
                     'oracle_pointer': 'REFUND_SALES_REC',
-                    'total_credit_amount': journal_item_receivable_accounts.credit,
+                    'total_credit_amount': journal_item_receivable_accounts.debit,
                     'total_debit_amount': journal_item_receivable_accounts.debit,
                     'txn_date': self.invoice_date,
                     'company_name': 'Build Best',
-                    'journal_id': f'JOURNAL-{move.journal_id.id}',
+                    'journal_id': move.journal_id.id,
                     'order_reference': move.invoice_origin,
                     'invoice_reference': move.ref
                 }

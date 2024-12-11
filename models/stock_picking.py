@@ -1,14 +1,14 @@
 from odoo import models, fields
-from ..serializers import ItemTxnSerializer
+from ..serializers import ItemTxnSerializer, JournalSerializer
 from ..utils import RequestSender
 from logging import getLogger
 import json
 
 _logger = getLogger(__name__)
 
-serializer = ItemTxnSerializer()
 BASE_URL_PWC = "https://ebs-uat.nmohammadgroup.com:4460"
-item_txn_api_url = f"{BASE_URL_PWC}/webservices/rest/pos_details/post_inventory_transaction/?"
+journal_api_url = f"{BASE_URL_PWC}/webservices/rest/pos_details/pos_journal_import/?"
+serializer = JournalSerializer()
 
 class ExtendedStockPicking(models.Model):
     _inherit = 'stock.picking'
@@ -18,46 +18,33 @@ class ExtendedStockPicking(models.Model):
 
         if self.state == 'assigned' and self.origin.startswith('Return'):
 
-            stock_move_model = self.env["stock.move.line"]
+            sales_reference = self.group_id.name
 
-            orders = []
+            sale_obj = self.env['sale.order'].sudo().search([('name', '=', sales_reference)])
 
-            for move in self.move_ids:
+            total_sales_rev = 0
 
-                orders.append({
-                    'org_unit': 'Build Best',
-                    'src_loc': 'BMU-MUR-01',
-                    'item_code': move.product_id.default_code,
-                    'sold_in_puom': move.product_uom_qty,
-                    'oracle_pointer': 'RETURN_SALES_REV',
-                    'txn_date': self.scheduled_date,
-                    'move_id': f'stock_move-{self.id}'
-                })
+            move_idss = [m_id.product_id.id for m_id in self.move_ids]
 
-            oracle_orders = serializer.serialize(orders)
+            for line in sale_obj.order_line:
+                if line.product_id.id in move_idss:
+                    total_sales_rev += line.price_subtotal
 
-            if orders:
-                resp = RequestSender(item_txn_api_url, payload=oracle_orders).post()
+            input_payload = {
+                'oracle_pointer': 'RETURN_SALES_REV',
+                'total_credit_amount': 0,
+                'total_debit_amount': 0,
+                'txn_date': self.scheduled_date,
+                'company_name': 'Build Best',
+                'journal_id': f'DELIVERY_RETURN_{self.id} WITH SALES RETURNED VALUE OF {total_sales_rev}',
+                'order_reference': self.group_id.name,
+                'invoice_reference': self.name
+            }
 
-                print(resp)
+            payload = serializer.serialize([input_payload])
+            print(payload)
+            RequestSender(journal_api_url, payload=payload).post()
 
-                arrays = resp["OutputParameters"]["P_OUTPITMTRANTABTYP"]["P_OUTPITMTRANTABTYP_ITEM"]
-
-                if resp:
-                    _logger.info("Inventory Update")
-                    _logger.info(json.dumps(resp, indent=4))
-
-                success_item = []
-                for arr in arrays:
-                    if arr["R_STATUS"] != "S":
-                        success_item.append(arr["ITEM_CODE"])
-                    else:
-                        pass
-
-                if success_item:
-                    stock_move_model.update_item_oracle_status(success_item)
-
-            _logger.info(f"Executed PwC Cron(send_inventory_update_of_sold_items) at {serializer.timeit()}")
 
         return res
 
