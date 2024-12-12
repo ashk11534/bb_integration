@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<odoo>
+    <menuitem id="sales_transaction_root_menu_id" name="Sales Transaction" sequence="10">
+        <menuitem id="sales_transaction_menu_id"
+                 name="Sales Transaction"
+                 sequence="0"
+                 action="sales_transaction_action_form"
+        />
+    </menuitem>
+</odoo>

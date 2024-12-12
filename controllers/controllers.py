@@ -86,8 +86,10 @@ class SyncInventoryController(http.Controller):
     @logTracer
     def create_product(self, **kw):
         try:
+            from devtools import debug
             data = kw["OutputParameters"]["P_OUTITMTABTYP"]["P_OUTITMTABTYP_ITEM"]
 
+            debug(data)
             for item in data:
                 name = item.get("ITEM_DESCRIPTION")
                 item_code = item.get("ITEM_CODE")

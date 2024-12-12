@@ -44,7 +44,7 @@ class ExtendedStockMoveLine(models.Model):
                     dest_location.usage = 'customer'
                     and pt.default_code is not null
                     and sml.date::date = current_date
-                    and sml.is_processed = false 
+                    and sml.is_processed is not true
                 group by
                     sml.move_id,
                     rc.short_code,

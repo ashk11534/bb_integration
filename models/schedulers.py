@@ -58,12 +58,12 @@ class InventoryTransaction(models.Model):
             success_item = []
             for arr in arrays:
                 if arr["R_STATUS"] != "S":
-                    success_item.append(arr["ITEM_CODE"])
+                    _logger.error(f"Failed to send oracle item code : {arr['ITEM_CODE']}")
                 else:
-                    pass
-                    # success_item.append(arr["ITEM_CODE"])
+                    success_item.append(arr["ITEM_CODE"])
                 
             if success_item:
+                print(success_item)
                 stock_move_model.update_item_oracle_status(success_item)
 
             # if is_ok:
@@ -77,7 +77,6 @@ class InventoryTransaction(models.Model):
         orders = stock_move_model.get_return_stock_moves_today()
 
         oracle_orders = self.serializer.serialize(orders)
-        print(f"orcale orders : {oracle_orders}")
 
         if orders:
             resp = RequestSender(self.item_txn_api_url, payload=oracle_orders).post()
@@ -202,11 +201,7 @@ class JournalEntryTransaction(models.Model):
         _logger.info("Sending Journal Entry for Oracle")
         model = self.env["account.move"]
         today = datetime.today().strftime("%Y-%m-%d")
-
         journals = model.get_payment_journals(today)
-
-        for j in journals:
-            print(j.get('journal_id'))
 
         sales_journals = []
         advance_journals = []
@@ -223,7 +218,6 @@ class JournalEntryTransaction(models.Model):
             elif journal["oracle_pointer"].startswith("REFUND_CASH"):
                 journal["total_credit_amount"] = 0.0
                 refund_cash.append(journal)
-
             else:
                 journal["total_credit_amount"] = 0.0
                 sales_journals.append(journal)
@@ -289,7 +283,6 @@ class JournalEntryTransaction(models.Model):
             refund_cash.extend(credit_lines)
             payload = self.serializer.serialize(refund_cash)
             RequestSender(self.journal_api_url, payload=payload).post()
-
 
         _logger.info(f"Executed PwC Cron(send_payment_journals) at {self.serializer.timeit()}")
 

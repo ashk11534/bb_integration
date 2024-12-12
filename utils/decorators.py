@@ -10,6 +10,7 @@ import string
 _logger = getLogger(__name__)
 
 KEY_IDENTIFIER = "API_KEY"
+# API_KEY = "ORCLTESTME@123"
 API_KEY = "796df22fcd7e153461c1e2128b8a203e46191037fbf094f69ff60c1d3116c27e"
 
 __all__ = ["logTracer", "authKeyRequired"]

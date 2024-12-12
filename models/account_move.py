@@ -4,8 +4,10 @@ from ..utils import RequestSender
 from odoo.http import request as req
 
 BASE_URL_PWC = "https://ebs-uat.nmohammadgroup.com:4460"
+# BASE_URL_PWC = "https://ebs-uat.nmohammadgroup.com:4480"
 journal_api_url = f"{BASE_URL_PWC}/webservices/rest/pos_details/pos_journal_import/?"
 serializer = JournalSerializer()
+
 
 class ExtendedAccountMove(models.Model):
     _inherit = "account.move"
@@ -90,15 +92,13 @@ class ExtendedAccountMove(models.Model):
         """Fetch the Payment Journals for Cash, Bank including Advance Collections"""
         query = """
                 select
-                    am.id as journal_id,
+                    -- am.id,
                     rc.org_name as company_name,
-                    am.name as order_reference,
+                    -- am.name as order_reference,
                     am.date as txn_date,
                     aj.name as journal_name,
                     aj.type as journal_type,
                     aj.oracle_pointer,
-                    aa.code as journal_item_code,
-                    SUM(aml.quantity) AS transaction_qty,
                     SUM(aml.debit) AS total_debit_amount,
                     SUM(aml.credit) AS total_credit_amount
                 from
@@ -109,22 +109,19 @@ class ExtendedAccountMove(models.Model):
                     rc.id = am.company_id
                 join 
                     account_move_line aml ON aml.move_id = am.id
-                join account_account aa ON
-                    aa.id = aml.account_id 
                 where
                     aj.type in ('cash', 'bank')
                     and am.state in ('posted')
                     and am.date <= %s
                     and am.sent_to_oracle = FALSE
                 group by
-                    am.id,
+                    -- am.id,
                     rc.org_name,
-                    am.name,
+                    -- am.name,
                     am.date,
                     aj.name,
                     aj.type,
-                    aj.oracle_pointer,
-                    aa.code
+                    aj.oracle_pointer
                 """
         self.env.cr.execute(query, (date,))
         return self.env.cr.dictfetchall()
@@ -335,66 +332,85 @@ class ExtendedAccountMove(models.Model):
 
         for move in self:
 
-            if move.state == 'posted' and not self.sent_to_oracle:
-                journal_item_sales_dis = move.line_ids[0]
+            if move.state == 'posted' and not self.sent_to_oracle and not move.ref.startswith('Reversal'):
 
-                input_payload = {
-                    'oracle_pointer': 'SALES_DIS',
-                    'total_credit_amount': journal_item_sales_dis.debit,
-                    'total_debit_amount': journal_item_sales_dis.debit,
-                    'txn_date': self.invoice_date,
-                    'company_name': 'Build Best',
-                    'journal_id': move.journal_id.id,
-                    'order_reference': move.invoice_origin,
-                    'invoice_reference': self.name
-                }
+                if move.discount_rate > 0:
 
-                payload = serializer.serialize([input_payload])
-                print(payload)
-                if not self.sent_to_oracle and self.discount_rate > 0:
-                    RequestSender(journal_api_url, payload=payload).post()
+                    journal_item_sales_dis = move.line_ids[0]
 
-                journal_item_receivable_accounts = move.line_ids[-1]
+                    input_payload = {
+                        'oracle_pointer': 'SALES_DIS',
+                        'total_credit_amount': journal_item_sales_dis.debit,
+                        'total_debit_amount': journal_item_sales_dis.debit,
+                        'txn_date': self.invoice_date,
+                        'company_name': 'Build Best',
+                        'journal_id': move.journal_id.id,
+                        'order_reference': move.invoice_origin,
+                        'invoice_reference': self.name
+                    }
 
-                input_payload = {
-                    'oracle_pointer': 'RETURN_SALES_REC',
-                    'total_credit_amount': journal_item_receivable_accounts.debit,
-                    'total_debit_amount': journal_item_receivable_accounts.debit,
-                    'txn_date': self.invoice_date,
-                    'company_name': 'Build Best',
-                    'journal_id': move.journal_id.id,
-                    'order_reference': move.invoice_origin,
-                    'invoice_reference': self.name
-                }
+                    payload = serializer.serialize([input_payload])
+                    print(payload)
+                    if not self.sent_to_oracle and self.discount_rate > 0:
+                        RequestSender(journal_api_url, payload=payload).post()
 
-                payload = serializer.serialize([input_payload])
-                print(payload)
-                if not self.sent_to_oracle and self.discount_rate > 0:
-                    res = RequestSender(journal_api_url, payload=payload).post()
-                    if res != False:
-                        self.sent_to_oracle = True
+                    journal_item_receivable_accounts = move.line_ids[-1]
+
+                    input_payload = {
+                        'oracle_pointer': 'RETURN_SALES_REC',
+                        'total_credit_amount': journal_item_receivable_accounts.debit,
+                        'total_debit_amount': journal_item_receivable_accounts.debit,
+                        'txn_date': self.invoice_date,
+                        'company_name': 'Build Best',
+                        'journal_id': move.journal_id.id,
+                        'order_reference': move.invoice_origin,
+                        'invoice_reference': self.name
+                    }
+
+                    payload = serializer.serialize([input_payload])
+                    print(payload)
+                    if not self.sent_to_oracle and self.discount_rate > 0:
+                        res = RequestSender(journal_api_url, payload=payload).post()
+                        if res != False:
+                            self.sent_to_oracle = True
 
             if move.ref.startswith('Reversal'):
 
                 self.sent_to_oracle = False
 
-                journal_item_sales_dis = move.line_ids[0]
+                if move.discount_rate > 0:
 
-                input_payload = {
-                    'oracle_pointer': 'RETURN_SALES_DIS',
-                    'total_credit_amount': journal_item_sales_dis.debit,
-                    'total_debit_amount': journal_item_sales_dis.debit,
-                    'txn_date': self.invoice_date,
-                    'company_name': 'Build Best',
-                    'journal_id': move.journal_id.id,
-                    'order_reference': move.invoice_origin,
-                    'invoice_reference': self.name
-                }
+                    journal_item_sales_dis = move.line_ids[0]
 
-                payload = serializer.serialize([input_payload])
-                print(payload)
-                if not self.sent_to_oracle and self.discount_rate > 0:
-                    RequestSender(journal_api_url, payload=payload).post()
+                    number_of_returned_products = 0
+
+                    for line in self.invoice_line_ids:
+                        if line.sale_line_ids.product_id.default_code != 'GBLD' and line.sale_line_ids.qty_delivered == 0:
+                            number_of_returned_products += 1
+
+                    # print(number_of_returned_products)
+                    # print(abs(journal_item_sales_dis.price_subtotal))
+                    # print(len([line for line in move.invoice_line_ids if line.product_id.default_code != 'GBLD']))
+
+                    returned_sales_discount = (abs(journal_item_sales_dis.price_subtotal) / len([line for line in move.invoice_line_ids if line.product_id.default_code != 'GBLD'])) * number_of_returned_products
+
+                    # print(returned_sales_discount)
+
+                    input_payload = {
+                        'oracle_pointer': 'RETURN_SALES_DIS',
+                        'total_credit_amount': returned_sales_discount,
+                        'total_debit_amount': returned_sales_discount,
+                        'txn_date': self.invoice_date,
+                        'company_name': 'Build Best',
+                        'journal_id': move.journal_id.id,
+                        'order_reference': move.invoice_origin,
+                        'invoice_reference': self.name
+                    }
+
+                    payload = serializer.serialize([input_payload])
+                    print(payload)
+                    if not self.sent_to_oracle and self.discount_rate > 0:
+                        RequestSender(journal_api_url, payload=payload).post()
 
                 journal_item_receivable_accounts = move.line_ids[-1]
 
@@ -411,7 +427,7 @@ class ExtendedAccountMove(models.Model):
 
                 payload = serializer.serialize([input_payload])
                 print(payload)
-                if not self.sent_to_oracle and self.discount_rate > 0:
+                if not self.sent_to_oracle:
                     res = RequestSender(journal_api_url, payload=payload).post()
                     if res != False:
                         self.sent_to_oracle = True
@@ -419,3 +435,4 @@ class ExtendedAccountMove(models.Model):
             break
 
         return res
+

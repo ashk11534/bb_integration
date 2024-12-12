@@ -19,6 +19,7 @@
     "application": True,
     "auto_install": False,
     "data": [
+        "data/custom_sequence.xml",
         "views/ir_cron.xml",
         "views/account_journal_views.xml",
         "views/account_move_views.xml",
@@ -29,6 +30,8 @@
         "security/ir.model.access.csv",
         "views/stock_immediate_transfer_views.xml",
         "views/invoice_report.xml",
+        "views/views.xml",
+        "views/views_menu.xml"
     ],
     "assets": {
         "point_of_sale.assets": [

@@ -25,9 +25,6 @@ class JournalSerializer(Serializer):
         response = {"P_INPJLTABTYP": {}}
 
         for i, v in enumerate(values):
-
-            print(v)
-
             response["P_INPJLTABTYP"][f"P_INPJLTABTYP_ITEM{i+1}"] = {
                 "ENTITY_NAME": v.get("company_name"),
                 "TRX_DATE": self.format_date(v.get("txn_date")),
@@ -35,8 +32,8 @@ class JournalSerializer(Serializer):
                 "DR_AMOUNT": str(v.get("total_debit_amount", 0)),
                 "TRANSACTION_TYPE": v.get("oracle_pointer"),
                 "DESCRIPTION": f"RefNo: {v.get('order_reference', 'NA')}",
-                "ATTRIBUTE1": v.get('journal_id', 'NA'),
-                "ATTRIBUTE2": v.get('invoice_reference', 'NA'),
+                "ATTRIBUTE1": "",
+                "ATTRIBUTE2": "",
                 "ATTRIBUTE3": "",
                 "ATTRIBUTE4": "",
             }
