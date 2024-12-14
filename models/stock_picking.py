@@ -32,20 +32,33 @@ class ExtendedStockPicking(models.Model):
                 if line.product_id.id in move_idss:
                     total_sales_rev += line.price_subtotal
 
-            input_payload = {
-                'oracle_pointer': 'RETURN_SALES_REV',
-                'total_credit_amount': 0,
-                'total_debit_amount': 0,
-                'txn_date': self.scheduled_date,
-                'company_name': 'Build Best',
-                'journal_id': f'DELIVERY_RETURN_{self.id} WITH SALES RETURNED VALUE OF {total_sales_rev}',
-                'order_reference': self.group_id.name,
-                'invoice_reference': self.name
-            }
+            self.env['sales.transaction'].sudo().create({
+                'entity_name': 'Build Best',
+                'trx_date': self.scheduled_date,
+                'cr_amount': 0,
+                'dr_amount': 0,
+                'transaction_type': 'RETURN_SALES_REV',
+                'discount_rate': 0,
+                'journal_id': None,
+                'description': f'DELIVERY_RETURN_{self.id} WITH SALES RETURNED VALUE OF {total_sales_rev}',
+                'invoice_origin': self.group_id.name,
+                'attribute_1': self.name
+            })
 
-            payload = serializer.serialize([input_payload])
-            print(payload)
-            RequestSender(journal_api_url, payload=payload).post()
+            # input_payload = {
+            #     'oracle_pointer': 'RETURN_SALES_REV',
+            #     'total_credit_amount': 0,
+            #     'total_debit_amount': 0,
+            #     'txn_date': self.scheduled_date,
+            #     'company_name': 'Build Best',
+            #     'journal_id': f'DELIVERY_RETURN_{self.id} WITH SALES RETURNED VALUE OF {total_sales_rev}',
+            #     'order_reference': self.group_id.name,
+            #     'invoice_reference': self.name
+            # }
+            #
+            # payload = serializer.serialize([input_payload])
+            # print(payload)
+            # RequestSender(journal_api_url, payload=payload).post()
 
             if sale_obj.discount_rate > 0:
 
@@ -61,20 +74,33 @@ class ExtendedStockPicking(models.Model):
                     [line for line in sale_obj.order_line if
                      line.product_id.default_code != 'GBLD'])) * number_of_returned_products
 
-                input_payload = {
-                    'oracle_pointer': 'RETURN_SALES_DIS',
-                    'total_credit_amount': returned_sales_discount,
-                    'total_debit_amount': returned_sales_discount,
-                    'txn_date': self.scheduled_date,
-                    'company_name': 'Build Best',
-                    'journal_id': f'RETURN_SALES_DIS_{self.id} WITH SALES RETURNED DISCOUNT VALUE OF {returned_sales_discount}',
-                    'order_reference': self.group_id.name,
-                    'invoice_reference': self.name
-                }
+                self.env['sales.transaction'].sudo().create({
+                    'entity_name': 'Build Best',
+                    'trx_date': self.scheduled_date,
+                    'cr_amount': returned_sales_discount,
+                    'dr_amount': returned_sales_discount,
+                    'transaction_type': 'RETURN_SALES_DIS',
+                    'discount_rate': 0,
+                    'journal_id': None,
+                    'description': f'RETURN_SALES_DIS_{self.id} WITH SALES RETURNED DISCOUNT VALUE OF {returned_sales_discount}',
+                    'invoice_origin': self.group_id.name,
+                    'attribute_1': self.name
+                })
 
-                payload = serializer.serialize([input_payload])
-                print(payload)
-                RequestSender(journal_api_url, payload=payload).post()
+                # input_payload = {
+                #     'oracle_pointer': 'RETURN_SALES_DIS',
+                #     'total_credit_amount': returned_sales_discount,
+                #     'total_debit_amount': returned_sales_discount,
+                #     'txn_date': self.scheduled_date,
+                #     'company_name': 'Build Best',
+                #     'journal_id': f'RETURN_SALES_DIS_{self.id} WITH SALES RETURNED DISCOUNT VALUE OF {returned_sales_discount}',
+                #     'order_reference': self.group_id.name,
+                #     'invoice_reference': self.name
+                # }
+
+                # payload = serializer.serialize([input_payload])
+                # print(payload)
+                # RequestSender(journal_api_url, payload=payload).post()
 
         return res
 

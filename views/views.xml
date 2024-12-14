@@ -13,11 +13,13 @@
                 <field name="cr_amount"/>
                 <field name="dr_amount"/>
                 <field name="transaction_type"/>
+                <field name="discount_rate"/>
                 <field name="description"/>
                 <field name="attribute_1"/>
                 <field name="attribute_2"/>
                 <field name="attribute_3"/>
                 <field name="attribute_4"/>
+                <field name="sent_to_oracle"/>
             </tree>
         </field>
 
@@ -30,6 +32,10 @@
         <field name="model">sales.transaction</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button name="send_transaction_to_oracle" string="Send to oracle" type="object" class="oe_highlight" attrs="{'invisible': [('sent_to_oracle','=',True)]}"/>
+                </header>
+
                 <sheet>
                     <div class="oe_title">
                         <h1>
@@ -43,6 +49,8 @@
                             <field name="cr_amount" readonly="1"/>
                             <field name="dr_amount" readonly="1"/>
                             <field name="transaction_type" readonly="1"/>
+                            <field name="discount_rate" readonly="1"/>
+                            <field name="journal_id" readonly="1"/>
                         </group>
                         <group>
                             <field name="description" readonly="1"/>
@@ -50,12 +58,23 @@
                             <field name="attribute_2" readonly="1"/>
                             <field name="attribute_3" readonly="1"/>
                             <field name="attribute_4" readonly="1"/>
+                            <field name="sent_to_oracle" readonly="1"/>
                         </group>
                     </group>
                 </sheet>
             </form>
         </field>
 
+    </record>
+
+    <record id="sales_transaction_view_search" model="ir.ui.view">
+        <field name="name">Sales transaction search view</field>
+        <field name="model">sales.transaction</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="sequence" filter_domain="['|', '|', ('sequence', 'ilike', self), ('transaction_type', 'ilike', self), ('attribute_1', 'ilike', self)]"/>
+            </search>
+        </field>
     </record>
 
     <record id="sales_transaction_action_form" model="ir.actions.act_window">

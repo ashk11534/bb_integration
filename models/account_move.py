@@ -332,49 +332,77 @@ class ExtendedAccountMove(models.Model):
 
         for move in self:
 
-            if move.state == 'posted' and not self.sent_to_oracle and not move.ref.startswith('Reversal'):
+            if move.state == 'posted' and not self.sent_to_oracle and not move.ref and not move.ref.startswith('Reversal'):
 
                 if move.discount_rate > 0:
 
                     journal_item_sales_dis = move.line_ids[0]
 
-                    input_payload = {
-                        'oracle_pointer': 'SALES_DIS',
-                        'total_credit_amount': journal_item_sales_dis.debit,
-                        'total_debit_amount': journal_item_sales_dis.debit,
-                        'txn_date': self.invoice_date,
-                        'company_name': 'Build Best',
+                    self.env['sales.transaction'].sudo().create({
+                        'entity_name': 'Build Best',
+                        'trx_date': self.invoice_date,
+                        'cr_amount': journal_item_sales_dis.debit,
+                        'dr_amount': journal_item_sales_dis.debit,
+                        'transaction_type': 'SALES_DIS',
+                        'discount_rate': self.discount_rate,
                         'journal_id': move.journal_id.id,
-                        'order_reference': move.invoice_origin,
-                        'invoice_reference': self.name
-                    }
+                        'description': f"RefNo: {move.invoice_origin}",
+                        'invoice_origin': move.invoice_origin,
+                        'attribute_1': self.name
+                    })
 
-                    payload = serializer.serialize([input_payload])
-                    print(payload)
-                    if not self.sent_to_oracle and self.discount_rate > 0:
-                        RequestSender(journal_api_url, payload=payload).post()
+                    # input_payload = {
+                    #     'oracle_pointer': 'SALES_DIS',
+                    #     'total_credit_amount': journal_item_sales_dis.debit,
+                    #     'total_debit_amount': journal_item_sales_dis.debit,
+                    #     'txn_date': self.invoice_date,
+                    #     'company_name': 'Build Best',
+                    #     'journal_id': move.journal_id.id,
+                    #     'order_reference': move.invoice_origin,
+                    #     'invoice_reference': self.name
+                    # }
+                    #
+                    # payload = serializer.serialize([input_payload])
+                    # print(payload)
+                    # if not self.sent_to_oracle and self.discount_rate > 0:
+                    #     RequestSender(journal_api_url, payload=payload).post()
 
                     journal_item_receivable_accounts = move.line_ids[-1]
 
-                    input_payload = {
-                        'oracle_pointer': 'RETURN_SALES_REC',
-                        'total_credit_amount': journal_item_receivable_accounts.debit,
-                        'total_debit_amount': journal_item_receivable_accounts.debit,
-                        'txn_date': self.invoice_date,
-                        'company_name': 'Build Best',
+                    self.env['sales.transaction'].sudo().create({
+                        'entity_name': 'Build Best',
+                        'trx_date': self.invoice_date,
+                        'cr_amount': journal_item_receivable_accounts.debit,
+                        'dr_amount': journal_item_receivable_accounts.debit,
+                        'transaction_type': 'RETURN_SALES_REC',
+                        'discount_rate': self.discount_rate,
                         'journal_id': move.journal_id.id,
-                        'order_reference': move.invoice_origin,
-                        'invoice_reference': self.name
-                    }
+                        'description': f"RefNo: {move.invoice_origin}",
+                        'invoice_origin': move.invoice_origin,
+                        'attribute_1': self.name
+                    })
 
-                    payload = serializer.serialize([input_payload])
-                    print(payload)
-                    if not self.sent_to_oracle and self.discount_rate > 0:
-                        res = RequestSender(journal_api_url, payload=payload).post()
-                        if res != False:
-                            self.sent_to_oracle = True
+                    # input_payload = {
+                    #     'oracle_pointer': 'RETURN_SALES_REC',
+                    #     'total_credit_amount': journal_item_receivable_accounts.debit,
+                    #     'total_debit_amount': journal_item_receivable_accounts.debit,
+                    #     'txn_date': self.invoice_date,
+                    #     'company_name': 'Build Best',
+                    #     'journal_id': move.journal_id.id,
+                    #     'order_reference': move.invoice_origin,
+                    #     'invoice_reference': self.name
+                    # }
+                    #
+                    # payload = serializer.serialize([input_payload])
+                    # print(payload)
+                    # if not self.sent_to_oracle and self.discount_rate > 0:
+                    #     res = RequestSender(journal_api_url, payload=payload).post()
+                    #     if res != False:
+                    #         self.sent_to_oracle = True
 
-            if move.ref.startswith('Reversal'):
+                    self.sent_to_oracle = True
+
+            if move.ref and move.ref.startswith('Reversal'):
 
                 self.sent_to_oracle = False
 
@@ -396,41 +424,69 @@ class ExtendedAccountMove(models.Model):
 
                     # print(returned_sales_discount)
 
-                    input_payload = {
-                        'oracle_pointer': 'RETURN_SALES_DIS',
-                        'total_credit_amount': returned_sales_discount,
-                        'total_debit_amount': returned_sales_discount,
-                        'txn_date': self.invoice_date,
-                        'company_name': 'Build Best',
+                    self.env['sales.transaction'].sudo().create({
+                        'entity_name': 'Build Best',
+                        'trx_date': self.invoice_date,
+                        'cr_amount': returned_sales_discount,
+                        'dr_amount': returned_sales_discount,
+                        'transaction_type': 'RETURN_SALES_DIS',
+                        'discount_rate': self.discount_rate,
                         'journal_id': move.journal_id.id,
-                        'order_reference': move.invoice_origin,
-                        'invoice_reference': self.name
-                    }
+                        'description': f"RefNo: {move.invoice_origin}",
+                        'invoice_origin': move.invoice_origin,
+                        'attribute_1': self.name
+                    })
 
-                    payload = serializer.serialize([input_payload])
-                    print(payload)
-                    if not self.sent_to_oracle and self.discount_rate > 0:
-                        RequestSender(journal_api_url, payload=payload).post()
+                    # input_payload = {
+                    #     'oracle_pointer': 'RETURN_SALES_DIS',
+                    #     'total_credit_amount': returned_sales_discount,
+                    #     'total_debit_amount': returned_sales_discount,
+                    #     'txn_date': self.invoice_date,
+                    #     'company_name': 'Build Best',
+                    #     'journal_id': move.journal_id.id,
+                    #     'order_reference': move.invoice_origin,
+                    #     'invoice_reference': self.name
+                    # }
+                    #
+                    # payload = serializer.serialize([input_payload])
+                    # print(payload)
+                    # if not self.sent_to_oracle and self.discount_rate > 0:
+                    #     RequestSender(journal_api_url, payload=payload).post()
 
                 journal_item_receivable_accounts = move.line_ids[-1]
 
-                input_payload = {
-                    'oracle_pointer': 'REFUND_SALES_REC',
-                    'total_credit_amount': journal_item_receivable_accounts.debit,
-                    'total_debit_amount': journal_item_receivable_accounts.debit,
-                    'txn_date': self.invoice_date,
-                    'company_name': 'Build Best',
+                self.env['sales.transaction'].sudo().create({
+                    'entity_name': 'Build Best',
+                    'trx_date': self.invoice_date,
+                    'cr_amount': journal_item_receivable_accounts.debit,
+                    'dr_amount': journal_item_receivable_accounts.debit,
+                    'transaction_type': 'REFUND_SALES_REC',
+                    'discount_rate': self.discount_rate,
                     'journal_id': move.journal_id.id,
-                    'order_reference': move.invoice_origin,
-                    'invoice_reference': move.ref
-                }
+                    'description': f"RefNo: {move.invoice_origin}",
+                    'invoice_origin': move.invoice_origin,
+                    'attribute_1': self.name
+                })
 
-                payload = serializer.serialize([input_payload])
-                print(payload)
-                if not self.sent_to_oracle:
-                    res = RequestSender(journal_api_url, payload=payload).post()
-                    if res != False:
-                        self.sent_to_oracle = True
+                # input_payload = {
+                #     'oracle_pointer': 'REFUND_SALES_REC',
+                #     'total_credit_amount': journal_item_receivable_accounts.debit,
+                #     'total_debit_amount': journal_item_receivable_accounts.debit,
+                #     'txn_date': self.invoice_date,
+                #     'company_name': 'Build Best',
+                #     'journal_id': move.journal_id.id,
+                #     'order_reference': move.invoice_origin,
+                #     'invoice_reference': move.ref
+                # }
+                #
+                # payload = serializer.serialize([input_payload])
+                # print(payload)
+                # if not self.sent_to_oracle:
+                #     res = RequestSender(journal_api_url, payload=payload).post()
+                #     if res != False:
+                #         self.sent_to_oracle = True
+
+                self.sent_to_oracle = True
 
             break
 

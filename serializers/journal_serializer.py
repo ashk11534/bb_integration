@@ -32,7 +32,7 @@ class JournalSerializer(Serializer):
                 "DR_AMOUNT": str(v.get("total_debit_amount", 0)),
                 "TRANSACTION_TYPE": v.get("oracle_pointer"),
                 "DESCRIPTION": f"RefNo: {v.get('order_reference', 'NA')}",
-                "ATTRIBUTE1": "",
+                "ATTRIBUTE1": f"Invoice RefNo: {v.get('invoice_reference', 'NA')}",
                 "ATTRIBUTE2": "",
                 "ATTRIBUTE3": "",
                 "ATTRIBUTE4": "",
