@@ -86,6 +86,8 @@
                         domain="[('transaction_type', '=', 'RETURN_SALES_REC')]"/>
                 <filter name="filter_by_refund_sales_rec" string="REFUND_SALES_REC"
                         domain="[('transaction_type', '=', 'REFUND_SALES_REC')]"/>
+                <filter name="filter_by_sales_rev" string="SALES_REV"
+                        domain="[('transaction_type', '=', 'SALES_REV')]"/>
 
                 <group expand="0" string="Group By">
                     <filter name="group_sales_transaction_date" string="Date" domain="[]"

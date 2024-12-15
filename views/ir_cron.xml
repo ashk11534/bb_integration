@@ -214,5 +214,18 @@
             <field name="state">code</field>
             <field name="code">model.send_delivery_return_sales_discount()</field>
         </record>
+
+        <record id="cron_send_sales_revenue" model="ir.cron">
+            <field name="name">BB: Send sales revenue</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_sales_revenue_scheduler"/>
+            <field name="active" eval="True"/>
+            <field name="priority">7</field>
+            <field name="interval_type">days</field>
+            <field name="interval_number">1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 23:59:01')"/>
+            <field name="state">code</field>
+            <field name="code">model.send_sales_revenue()</field>
+        </record>
     </data>
 </odoo>

@@ -1,11 +1,13 @@
 from odoo import fields, models, api
+
+import pytz
+from dateutil import parser
 from ..serializers import JournalSerializer
 from ..utils import RequestSender
-from datetime import datetime
-from dateutil import parser
-import pytz
 
 BASE_URL_PWC = "https://ebs-uat.nmohammadgroup.com:4460"
+
+
 # BASE_URL_PWC = "https://ebsprod.nmohammadgroup.com:4480"
 
 class SalesTransaction(models.Model):
@@ -85,7 +87,7 @@ class SalesTransaction(models.Model):
                     'effect': {
                         'fadeout': 'slow',
                         'message': 'The transaction has been sent successfully!',
-                        'img_url': '/web/static/img/smile.svg',
+                        'img_url': '/bb_integrations/static/description/icon.png',
                         'type': 'rainbow_man',
                     }
                 }
@@ -139,7 +141,7 @@ class SalesTransaction(models.Model):
                     'effect': {
                         'fadeout': 'slow',
                         'message': 'The transaction has been sent successfully!',
-                        'img_url': '/web/static/img/smile.svg',
+                        'img_url': '/bb_integrations/static/description/icon.png',
                         'type': 'rainbow_man',
                     }
                 }
@@ -192,7 +194,7 @@ class SalesTransaction(models.Model):
                         'effect': {
                             'fadeout': 'slow',
                             'message': 'The transaction has been sent successfully!',
-                            'img_url': '/web/static/img/smile.svg',
+                            'img_url': '/bb_integrations/static/description/icon.png',
                             'type': 'rainbow_man',
                         }
                     }
@@ -245,7 +247,7 @@ class SalesTransaction(models.Model):
                         'effect': {
                             'fadeout': 'slow',
                             'message': 'The transaction has been sent successfully!',
-                            'img_url': '/web/static/img/smile.svg',
+                            'img_url': '/bb_integrations/static/description/icon.png',
                             'type': 'rainbow_man',
                         }
                     }
@@ -294,12 +296,11 @@ class SalesTransaction(models.Model):
 
                     self.output_payload = op_obj.id
 
-
                     return {
                         'effect': {
                             'fadeout': 'slow',
                             'message': 'The transaction has been sent successfully!',
-                            'img_url': '/web/static/img/smile.svg',
+                            'img_url': '/bb_integrations/static/description/icon.png',
                             'type': 'rainbow_man',
                         }
                     }
@@ -352,11 +353,63 @@ class SalesTransaction(models.Model):
                         'effect': {
                             'fadeout': 'slow',
                             'message': 'The transaction has been sent successfully!',
-                            'img_url': '/web/static/img/smile.svg',
+                            'img_url': '/bb_integrations/static/description/icon.png',
                             'type': 'rainbow_man',
                         }
                     }
 
+        if self.transaction_type == 'SALES_REV':
+            input_payload = {
+                'oracle_pointer': self.transaction_type,
+                'total_credit_amount': self.cr_amount,
+                'total_debit_amount': self.dr_amount,
+                'txn_date': self.trx_date,
+                'company_name': self.entity_name,
+                'journal_id': self.journal_id,
+                'order_reference': self.invoice_origin,
+                'invoice_reference': self.attribute_1
+            }
+
+            if not self.sent_to_oracle:
+                payload = self.serializer.serialize([input_payload])
+                print(payload)
+                res = RequestSender(self.journal_api_url, payload=payload).post()
+                if res != False:
+                    self.sent_to_oracle = True
+
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    self.output_payload = op_obj.id
+
+                    return {
+                        'effect': {
+                            'fadeout': 'slow',
+                            'message': 'The transaction has been sent successfully!',
+                            'img_url': '/bb_integrations/static/description/icon.png',
+                            'type': 'rainbow_man',
+                        }
+                    }
 
     @api.model
     def create(self, vals):
