@@ -33,7 +33,8 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="send_transaction_to_oracle" string="Send to oracle" type="object" class="oe_highlight" attrs="{'invisible': [('sent_to_oracle','=',True)]}"/>
+                    <button name="send_transaction_to_oracle" string="Send to oracle" type="object" class="oe_highlight"
+                            attrs="{'invisible': [('sent_to_oracle','=',True)]}"/>
                 </header>
 
                 <sheet>
@@ -54,10 +55,11 @@
                         </group>
                         <group>
                             <field name="description" readonly="1"/>
-                            <field name="attribute_1" readonly="1" />
+                            <field name="attribute_1" readonly="1"/>
                             <field name="attribute_2" readonly="1"/>
                             <field name="attribute_3" readonly="1"/>
                             <field name="attribute_4" readonly="1"/>
+                            <field name="output_payload" readonly="1"/>
                             <field name="sent_to_oracle" readonly="1"/>
                         </group>
                     </group>
@@ -72,7 +74,23 @@
         <field name="model">sales.transaction</field>
         <field name="arch" type="xml">
             <search>
-                <field name="sequence" filter_domain="['|', '|', ('sequence', 'ilike', self), ('transaction_type', 'ilike', self), ('attribute_1', 'ilike', self)]"/>
+                <field name="sequence"
+                       filter_domain="['|', '|', ('sequence', 'ilike', self), ('transaction_type', 'ilike', self), ('attribute_1', 'ilike', self)]"/>
+                <filter name="filter_by_sales_dis" string="SALES_DIS"
+                        domain="[('transaction_type', '=', 'SALES_DIS')]"/>
+                <filter name="filter_by_return_sales_dis" string="RETURN_SALES_DIS"
+                        domain="[('transaction_type', '=', 'RETURN_SALES_DIS')]"/>
+                <filter name="filter_by_return_sales_rev" string="RETURN_SALES_REV"
+                        domain="[('transaction_type', '=', 'RETURN_SALES_REV')]"/>
+                <filter name="filter_by_return_sales_rec" string="RETURN_SALES_REC"
+                        domain="[('transaction_type', '=', 'RETURN_SALES_REC')]"/>
+                <filter name="filter_by_refund_sales_rec" string="REFUND_SALES_REC"
+                        domain="[('transaction_type', '=', 'REFUND_SALES_REC')]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_sales_transaction_date" string="Date" domain="[]"
+                            context="{'group_by':'trx_date'}"/>
+                </group>
             </search>
         </field>
     </record>
@@ -81,6 +99,101 @@
 
         <field name="name">Sales Transaction</field>
         <field name="res_model">sales.transaction</field>
+        <field name="view_mode">tree,form</field>
+
+    </record>
+
+    <record id="sales_transaction_op_view_tree" model="ir.ui.view">
+
+        <field name="name">Sales Transaction OP Tree View</field>
+        <field name="model">sales.transaction.op</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence"/>
+                <field name="trx_date"/>
+                <field name="entity_name"/>
+                <field name="cr_amount"/>
+                <field name="dr_amount"/>
+                <field name="transaction_type"/>
+                <field name="description"/>
+                <field name="r_status"/>
+                <field name="r_msg"/>
+                <field name="attribute_1"/>
+                <field name="attribute_2"/>
+                <field name="attribute_3"/>
+                <field name="attribute_4"/>
+            </tree>
+        </field>
+
+    </record>
+
+
+    <record id="sales_transaction_op_view_form" model="ir.ui.view">
+
+        <field name="name">Sales Transaction OP Form View</field>
+        <field name="model">sales.transaction.op</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="sequence" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="trx_date" readonly="1"/>
+                            <field name="entity_name" readonly="1"/>
+                            <field name="cr_amount" readonly="1"/>
+                            <field name="dr_amount" readonly="1"/>
+                            <field name="transaction_type" readonly="1"/>
+                            <field name="r_status" readonly="1"/>
+                            <field name="r_msg" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="description" readonly="1"/>
+                            <field name="attribute_1" readonly="1"/>
+                            <field name="attribute_2" readonly="1"/>
+                            <field name="attribute_3" readonly="1"/>
+                            <field name="attribute_4" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+
+    </record>
+
+    <record id="sales_transaction_op_view_search" model="ir.ui.view">
+        <field name="name">Sales transaction OP search view</field>
+        <field name="model">sales.transaction.op</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="sequence"
+                       filter_domain="['|', '|', ('sequence', 'ilike', self), ('transaction_type', 'ilike', self), ('attribute_1', 'ilike', self)]"/>
+                <filter name="filter_by_sales_op_dis" string="SALES_DIS"
+                        domain="[('transaction_type', '=', 'SALES_DIS')]"/>
+                <filter name="filter_by_return_sales_op_dis" string="RETURN_SALES_DIS"
+                        domain="[('transaction_type', '=', 'RETURN_SALES_DIS')]"/>
+                <filter name="filter_by_return_sales_op_rev" string="RETURN_SALES_REV"
+                        domain="[('transaction_type', '=', 'RETURN_SALES_REV')]"/>
+                <filter name="filter_by_return_sales_op_rec" string="RETURN_SALES_REC"
+                        domain="[('transaction_type', '=', 'RETURN_SALES_REC')]"/>
+                <filter name="filter_by_refund_sales_op_rec" string="REFUND_SALES_REC"
+                        domain="[('transaction_type', '=', 'REFUND_SALES_REC')]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_sales_transaction_op_date" string="Date" domain="[]"
+                            context="{'group_by':'trx_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="sales_transaction_op_action_form" model="ir.actions.act_window">
+
+        <field name="name">Sales Transaction Output Payload</field>
+        <field name="res_model">sales.transaction.op</field>
         <field name="view_mode">tree,form</field>
 
     </record>

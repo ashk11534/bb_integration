@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <odoo>
-    <menuitem id="sales_transaction_root_menu_id" name="Sales Transaction" sequence="10">
-        <menuitem id="sales_transaction_menu_id"
-                 name="Sales Transaction"
-                 sequence="0"
-                 action="sales_transaction_action_form"
-        />
-    </menuitem>
+    <menuitem id="sales_transaction_root_menu_id" name="Sales Transaction" sequence="10"/>
+
+    <menuitem id="sales_transaction_menu_id"
+              name="Sales Transaction"
+              sequence="0"
+              parent="sales_transaction_root_menu_id"
+              action="sales_transaction_action_form"
+    />
+    <menuitem id="sales_transaction_op_menu_id"
+              name="Output Payload"
+              sequence="0"
+              parent="sales_transaction_root_menu_id"
+              action="sales_transaction_op_action_form"
+    />
 </odoo>

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
+import pytz
+from dateutil import parser
 from logging import getLogger
 
 from odoo import models
@@ -421,6 +423,31 @@ class SalesReceivableAccounts(models.Model):
                 if res != False:
                     sales_r_acc.sent_to_oracle = True
 
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    sales_r_acc.output_payload = op_obj.id
+
 
 class SalesDiscountScheduler(models.Model):
     _name = 'sales.discount.scheduler'
@@ -452,6 +479,31 @@ class SalesDiscountScheduler(models.Model):
                 res = RequestSender(self.journal_api_url, payload=payload).post()
                 if res != False:
                     sales_dis.sent_to_oracle = True
+
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    sales_dis.output_payload = op_obj.id
 
 
 class ReturnSalesDiscountScheduler(models.Model):
@@ -485,6 +537,32 @@ class ReturnSalesDiscountScheduler(models.Model):
                 if res != False:
                     return_sales_dis.sent_to_oracle = True
 
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    return_sales_dis.output_payload = op_obj.id
+
+
 
 class RefundReceivableAccountsScheduler(models.Model):
     _name = 'refund.receivable.accounts.scheduler'
@@ -517,6 +595,31 @@ class RefundReceivableAccountsScheduler(models.Model):
                 if res != False:
                     refund_rcv_acc.sent_to_oracle = True
 
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    refund_rcv_acc.output_payload = op_obj.id
+
 
 class ReturnSalesRevenueScheduler(models.Model):
     _name = 'return.sales.revenue.scheduler'
@@ -545,8 +648,35 @@ class ReturnSalesRevenueScheduler(models.Model):
             if not return_sales_rev.sent_to_oracle:
                 payload = self.serializer.serialize([input_payload])
                 print(payload)
-                RequestSender(self.journal_api_url, payload=payload).post()
-                return_sales_rev.sent_to_oracle = True
+                res = RequestSender(self.journal_api_url, payload=payload).post()
+
+                if res != False:
+                    return_sales_rev.sent_to_oracle = True
+
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    return_sales_rev.output_payload = op_obj.id
 
 
 class DeliveryReturnSalesDiscountScheduler(models.Model):
@@ -576,8 +706,35 @@ class DeliveryReturnSalesDiscountScheduler(models.Model):
             if not delivery_return_sales_dis.sent_to_oracle and delivery_return_sales_dis.attribute_1.startswith('Compa'):
                 payload = self.serializer.serialize([input_payload])
                 print(payload)
-                RequestSender(self.journal_api_url, payload=payload).post()
-                delivery_return_sales_dis.sent_to_oracle = True
+                res = RequestSender(self.journal_api_url, payload=payload).post()
+
+                if res != False:
+                    delivery_return_sales_dis.sent_to_oracle = True
+
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    delivery_return_sales_dis.output_payload = op_obj.id
 
 
 

@@ -1,6 +1,9 @@
 from odoo import fields, models, api
 from ..serializers import JournalSerializer
 from ..utils import RequestSender
+from datetime import datetime
+from dateutil import parser
+import pytz
 
 BASE_URL_PWC = "https://ebs-uat.nmohammadgroup.com:4460"
 # BASE_URL_PWC = "https://ebsprod.nmohammadgroup.com:4480"
@@ -28,6 +31,7 @@ class SalesTransaction(models.Model):
     attribute_2 = fields.Char(string='Attribute_2')
     attribute_3 = fields.Char(string='Attribute_3')
     attribute_4 = fields.Char(string='Attribute_4')
+    output_payload = fields.Many2one('sales.transaction.op', string='Output payload')
     sent_to_oracle = fields.Boolean(string='Sent to oracle', default=False)
 
     def send_transaction_to_oracle(self):
@@ -47,8 +51,35 @@ class SalesTransaction(models.Model):
             if not self.sent_to_oracle:
                 payload = self.serializer.serialize([input_payload])
                 print(payload)
-                RequestSender(self.journal_api_url, payload=payload).post()
-                self.sent_to_oracle = True
+                res = RequestSender(self.journal_api_url, payload=payload).post()
+
+                if res != False:
+                    self.sent_to_oracle = True
+
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    self.output_payload = op_obj.id
 
                 return {
                     'effect': {
@@ -74,8 +105,35 @@ class SalesTransaction(models.Model):
             if not self.sent_to_oracle and self.attribute_1.startswith('Compa'):
                 payload = self.serializer.serialize([input_payload])
                 print(payload)
-                RequestSender(self.journal_api_url, payload=payload).post()
-                self.sent_to_oracle = True
+                res = RequestSender(self.journal_api_url, payload=payload).post()
+
+                if res != False:
+                    self.sent_to_oracle = True
+
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    self.output_payload = op_obj.id
 
                 return {
                     'effect': {
@@ -105,6 +163,31 @@ class SalesTransaction(models.Model):
                 if res != False:
                     self.sent_to_oracle = True
 
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    self.output_payload = op_obj.id
+
                     return {
                         'effect': {
                             'fadeout': 'slow',
@@ -132,6 +215,31 @@ class SalesTransaction(models.Model):
                 res = RequestSender(self.journal_api_url, payload=payload).post()
                 if res != False:
                     self.sent_to_oracle = True
+
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    self.output_payload = op_obj.id
 
                     return {
                         'effect': {
@@ -161,6 +269,32 @@ class SalesTransaction(models.Model):
                 if res != False:
                     self.sent_to_oracle = True
 
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    self.output_payload = op_obj.id
+
+
                     return {
                         'effect': {
                             'fadeout': 'slow',
@@ -188,6 +322,31 @@ class SalesTransaction(models.Model):
                 res = RequestSender(self.journal_api_url, payload=payload).post()
                 if res != False:
                     self.sent_to_oracle = True
+
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    self.output_payload = op_obj.id
 
                     return {
                         'effect': {
