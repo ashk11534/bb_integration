@@ -135,16 +135,16 @@
             <field name="code">model.add_new_products()</field>
         </record>
 
-
         <record id="cron_sales_receivable_accounts" model="ir.cron">
-            <field name="name">BB: Sales receivable accounts scheduler</field>
+            <field name="name">BB: Return Sales receivable accounts scheduler</field>
             <field name="type">ir.actions.server</field>
             <field name="model_id" ref="model_sales_receivable_accounts_scheduler"/>
             <field name="active" eval="True"/>
             <field name="priority">7</field>
             <field name="interval_type">days</field>
             <field name="interval_number">1</field>
-            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 18:59:01')"/>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
             <field name="state">code</field>
             <field name="code">model.send_sales_receivable_accounts()</field>
         </record>
@@ -157,7 +157,8 @@
             <field name="priority">7</field>
             <field name="interval_type">days</field>
             <field name="interval_number">1</field>
-            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 19:59:01')"/>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
             <field name="state">code</field>
             <field name="code">model.send_sales_discount()</field>
         </record>
@@ -171,7 +172,8 @@
             <field name="priority">7</field>
             <field name="interval_type">days</field>
             <field name="interval_number">1</field>
-            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 20:59:01')"/>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
             <field name="state">code</field>
             <field name="code">model.send_return_sales_discount()</field>
         </record>
@@ -184,7 +186,8 @@
             <field name="priority">7</field>
             <field name="interval_type">days</field>
             <field name="interval_number">1</field>
-            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 21:59:01')"/>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
             <field name="state">code</field>
             <field name="code">model.send_refund_receivable_accounts()</field>
         </record>
@@ -197,7 +200,8 @@
             <field name="priority">7</field>
             <field name="interval_type">days</field>
             <field name="interval_number">1</field>
-            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 22:59:01')"/>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
             <field name="state">code</field>
             <field name="code">model.send_return_sales_revenue()</field>
         </record>
@@ -210,7 +214,8 @@
             <field name="priority">7</field>
             <field name="interval_type">days</field>
             <field name="interval_number">1</field>
-            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 23:59:01')"/>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
             <field name="state">code</field>
             <field name="code">model.send_delivery_return_sales_discount()</field>
         </record>
@@ -223,9 +228,25 @@
             <field name="priority">7</field>
             <field name="interval_type">days</field>
             <field name="interval_number">1</field>
-            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 23:59:01')"/>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
             <field name="state">code</field>
             <field name="code">model.send_sales_revenue()</field>
         </record>
+
+        <record id="cron_send_sales_receivable" model="ir.cron">
+            <field name="name">BB: Send sales receivable</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_sales_receivable_scheduler"/>
+            <field name="active" eval="True"/>
+            <field name="priority">7</field>
+            <field name="interval_type">days</field>
+            <field name="interval_number">1</field>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d 17:30:59')"/>
+            <field name="state">code</field>
+            <field name="code">model.send_sales_receivable()</field>
+        </record>
+
     </data>
 </odoo>

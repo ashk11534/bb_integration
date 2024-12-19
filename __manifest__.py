@@ -28,6 +28,7 @@
         "views/pos_index.xml",
         "views/res_partner_views.xml",
         "security/ir.model.access.csv",
+        "security/sent_to_oracle_security_group.xml",
         "views/stock_immediate_transfer_views.xml",
         "views/invoice_report.xml",
         "views/views.xml",

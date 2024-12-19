@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<odoo>
+    <record id="group_bb_sent_to_oracle" model="res.groups">
+        <field name="name">Show Send to Oracle Button</field>
+        <field name="category_id" ref="base.module_category_administration_administration"/>
+    </record>
+</odoo>

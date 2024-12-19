@@ -34,7 +34,7 @@
             <form>
                 <header>
                     <button name="send_transaction_to_oracle" string="Send to oracle" type="object" class="oe_highlight"
-                            attrs="{'invisible': [('sent_to_oracle','=',True)]}"/>
+                            attrs="{'invisible': [('sent_to_oracle','=',True)]}" groups="bb_integrations.group_bb_sent_to_oracle"/>
                 </header>
 
                 <sheet>

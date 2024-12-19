@@ -4,7 +4,7 @@
     <menuitem id="sales_transaction_root_menu_id" name="Sales Transaction" sequence="10"/>
 
     <menuitem id="sales_transaction_menu_id"
-              name="Sales Transaction"
+              name="Input Payload"
               sequence="0"
               parent="sales_transaction_root_menu_id"
               action="sales_transaction_action_form"

@@ -24,13 +24,29 @@ class ExtendedStockPicking(models.Model):
 
             sale_obj = self.env['sale.order'].sudo().search([('name', '=', sales_reference)])
 
-            total_sales_rev = 0
-
             move_idss = [m_id.product_id.id for m_id in self.move_ids]
+
+            journal_item_sales_dis = sale_obj.amount_discount
+
+            number_of_returned_products = 0
+
+            for line in sale_obj.order_line:
+                if line.product_id.id in move_idss:
+                    number_of_returned_products += line.product_uom_qty
+
+            returned_sales_discount = (journal_item_sales_dis / sum(
+                [line.product_uom_qty for line in sale_obj.order_line if
+                 line.product_id.default_code != 'GBLD'])) * number_of_returned_products
+
+            total_sales_rev = 0
 
             for line in sale_obj.order_line:
                 if line.product_id.id in move_idss:
                     total_sales_rev += line.price_subtotal
+
+            move_discount = sum([line.price_subtotal for line in sale_obj.order_line if line.product_id.id in move_idss])
+
+            # print(returned_sales_discount, move_discount)
 
             self.env['sales.transaction'].sudo().create({
                 'entity_name': 'Build Best',
@@ -38,9 +54,22 @@ class ExtendedStockPicking(models.Model):
                 'cr_amount': 0,
                 'dr_amount': 0,
                 'transaction_type': 'RETURN_SALES_REV',
-                'discount_rate': 0,
+                'discount_rate': sale_obj.discount_rate,
                 'journal_id': None,
                 'description': f'DELIVERY_RETURN_{self.id} WITH SALES RETURNED VALUE OF {total_sales_rev}',
+                'invoice_origin': self.group_id.name,
+                'attribute_1': self.name
+            })
+
+            self.env['sales.transaction'].sudo().create({
+                'entity_name': 'Build Best',
+                'trx_date': self.scheduled_date,
+                'cr_amount': move_discount - returned_sales_discount,
+                'dr_amount': move_discount - returned_sales_discount,
+                'transaction_type': 'RETURN_SALES_REC',
+                'discount_rate': sale_obj.discount_rate,
+                'journal_id': None,
+                'description': f'RETURN_SALES_REC_{self.id} WITH SALES RECEIVABLE VALUE OF {move_discount - returned_sales_discount}',
                 'invoice_origin': self.group_id.name,
                 'attribute_1': self.name
             })
@@ -62,16 +91,16 @@ class ExtendedStockPicking(models.Model):
 
             if sale_obj.discount_rate > 0:
 
-                journal_item_sales_dis = sale_obj.order_line[0]
+                journal_item_sales_dis = sale_obj.amount_discount
 
                 number_of_returned_products = 0
 
                 for line in sale_obj.order_line:
                     if line.product_id.id in move_idss:
-                        number_of_returned_products += 1
+                        number_of_returned_products += line.product_uom_qty
 
-                returned_sales_discount = (abs(journal_item_sales_dis.price_subtotal) / len(
-                    [line for line in sale_obj.order_line if
+                returned_sales_discount = (journal_item_sales_dis / sum(
+                    [line.product_uom_qty for line in sale_obj.order_line if
                      line.product_id.default_code != 'GBLD'])) * number_of_returned_products
 
                 self.env['sales.transaction'].sudo().create({

@@ -332,40 +332,9 @@ class ExtendedAccountMove(models.Model):
 
         for move in self:
 
-            if move.state == 'posted' and not self.sent_to_oracle and not move.ref and not move.ref.startswith('Reversal'):
-
-                if move.discount_rate > 0:
-
-                    journal_item_sales_dis = move.line_ids[0]
-
-                    self.env['sales.transaction'].sudo().create({
-                        'entity_name': 'Build Best',
-                        'trx_date': self.invoice_date,
-                        'cr_amount': journal_item_sales_dis.debit,
-                        'dr_amount': journal_item_sales_dis.debit,
-                        'transaction_type': 'SALES_DIS',
-                        'discount_rate': self.discount_rate,
-                        'journal_id': move.journal_id.id,
-                        'description': f"RefNo: {move.invoice_origin}",
-                        'invoice_origin': move.invoice_origin,
-                        'attribute_1': self.name
-                    })
-
-                    # input_payload = {
-                    #     'oracle_pointer': 'SALES_DIS',
-                    #     'total_credit_amount': journal_item_sales_dis.debit,
-                    #     'total_debit_amount': journal_item_sales_dis.debit,
-                    #     'txn_date': self.invoice_date,
-                    #     'company_name': 'Build Best',
-                    #     'journal_id': move.journal_id.id,
-                    #     'order_reference': move.invoice_origin,
-                    #     'invoice_reference': self.name
-                    # }
-                    #
-                    # payload = serializer.serialize([input_payload])
-                    # print(payload)
-                    # if not self.sent_to_oracle and self.discount_rate > 0:
-                    #     RequestSender(journal_api_url, payload=payload).post()
+            if move.state == 'posted' and not self.sent_to_oracle:
+                if not str(move.ref).startswith('Reversal'):
+                    # if move.discount_rate > 0:
 
                     journal_item_receivable_accounts = move.line_ids[-1]
 
@@ -374,7 +343,7 @@ class ExtendedAccountMove(models.Model):
                         'trx_date': self.invoice_date,
                         'cr_amount': journal_item_receivable_accounts.debit,
                         'dr_amount': journal_item_receivable_accounts.debit,
-                        'transaction_type': 'RETURN_SALES_REC',
+                        'transaction_type': 'SALES_REC',
                         'discount_rate': self.discount_rate,
                         'journal_id': move.journal_id.id,
                         'description': f"RefNo: {move.invoice_origin}",
@@ -382,23 +351,41 @@ class ExtendedAccountMove(models.Model):
                         'attribute_1': self.name
                     })
 
-                    # input_payload = {
-                    #     'oracle_pointer': 'RETURN_SALES_REC',
-                    #     'total_credit_amount': journal_item_receivable_accounts.debit,
-                    #     'total_debit_amount': journal_item_receivable_accounts.debit,
-                    #     'txn_date': self.invoice_date,
-                    #     'company_name': 'Build Best',
-                    #     'journal_id': move.journal_id.id,
-                    #     'order_reference': move.invoice_origin,
-                    #     'invoice_reference': self.name
-                    # }
-                    #
-                    # payload = serializer.serialize([input_payload])
-                    # print(payload)
-                    # if not self.sent_to_oracle and self.discount_rate > 0:
-                    #     res = RequestSender(journal_api_url, payload=payload).post()
-                    #     if res != False:
-                    #         self.sent_to_oracle = True
+                        # input_payload = {
+                        #     'oracle_pointer': 'SALES_DIS',
+                        #     'total_credit_amount': journal_item_sales_dis.debit,
+                        #     'total_debit_amount': journal_item_sales_dis.debit,
+                        #     'txn_date': self.invoice_date,
+                        #     'company_name': 'Build Best',
+                        #     'journal_id': move.journal_id.id,
+                        #     'order_reference': move.invoice_origin,
+                        #     'invoice_reference': self.name
+                        # }
+                        #
+                        # payload = serializer.serialize([input_payload])
+                        # print(payload)
+                        # if not self.sent_to_oracle and self.discount_rate > 0:
+                        #     RequestSender(journal_api_url, payload=payload).post()
+
+
+
+                        # input_payload = {
+                        #     'oracle_pointer': 'RETURN_SALES_REC',
+                        #     'total_credit_amount': journal_item_receivable_accounts.debit,
+                        #     'total_debit_amount': journal_item_receivable_accounts.debit,
+                        #     'txn_date': self.invoice_date,
+                        #     'company_name': 'Build Best',
+                        #     'journal_id': move.journal_id.id,
+                        #     'order_reference': move.invoice_origin,
+                        #     'invoice_reference': self.name
+                        # }
+                        #
+                        # payload = serializer.serialize([input_payload])
+                        # print(payload)
+                        # if not self.sent_to_oracle and self.discount_rate > 0:
+                        #     res = RequestSender(journal_api_url, payload=payload).post()
+                        #     if res != False:
+                        #         self.sent_to_oracle = True
 
                     self.sent_to_oracle = True
 
@@ -406,36 +393,34 @@ class ExtendedAccountMove(models.Model):
 
                 self.sent_to_oracle = False
 
-                if move.discount_rate > 0:
-
-                    journal_item_sales_dis = move.line_ids[0]
-
-                    number_of_returned_products = 0
-
-                    for line in self.invoice_line_ids:
-                        if line.sale_line_ids.product_id.default_code != 'GBLD' and line.sale_line_ids.qty_delivered == 0:
-                            number_of_returned_products += 1
-
-                    # print(number_of_returned_products)
-                    # print(abs(journal_item_sales_dis.price_subtotal))
-                    # print(len([line for line in move.invoice_line_ids if line.product_id.default_code != 'GBLD']))
-
-                    returned_sales_discount = (abs(journal_item_sales_dis.price_subtotal) / len([line for line in move.invoice_line_ids if line.product_id.default_code != 'GBLD'])) * number_of_returned_products
-
-                    # print(returned_sales_discount)
-
-                    self.env['sales.transaction'].sudo().create({
-                        'entity_name': 'Build Best',
-                        'trx_date': self.invoice_date,
-                        'cr_amount': returned_sales_discount,
-                        'dr_amount': returned_sales_discount,
-                        'transaction_type': 'RETURN_SALES_DIS',
-                        'discount_rate': self.discount_rate,
-                        'journal_id': move.journal_id.id,
-                        'description': f"RefNo: {move.invoice_origin}",
-                        'invoice_origin': move.invoice_origin,
-                        'attribute_1': self.name
-                    })
+                # if move.discount_rate > 0:
+                #
+                #     journal_item_sales_dis = [line for line in move.invoice_line_ids if line.product_id.default_code == 'GBLD']
+                #       if journal_item_sales_dis:
+                #             journal_item_sales_dis = journal_item_sales_dis[0]
+                #
+                #     number_of_returned_products = 0
+                #
+                #     for line in self.invoice_line_ids:
+                #         if line.sale_line_ids.product_id.default_code != 'GBLD' and line.sale_line_ids.qty_delivered == 0:
+                #             number_of_returned_products += 1
+                #
+                #     returned_sales_discount = (abs(journal_item_sales_dis.price_subtotal) / sum([line.quantity for line in move.invoice_line_ids if line.product_id.default_code != 'GBLD'])) * number_of_returned_products
+                #
+                #     # print(returned_sales_discount)
+                #
+                #     self.env['sales.transaction'].sudo().create({
+                #         'entity_name': 'Build Best',
+                #         'trx_date': self.invoice_date,
+                #         'cr_amount': returned_sales_discount,
+                #         'dr_amount': returned_sales_discount,
+                #         'transaction_type': 'RETURN_SALES_DIS',
+                #         'discount_rate': self.discount_rate,
+                #         'journal_id': move.journal_id.id,
+                #         'description': f"RefNo: {move.invoice_origin}",
+                #         'invoice_origin': move.invoice_origin,
+                #         'attribute_1': self.name
+                #     })
 
                     # input_payload = {
                     #     'oracle_pointer': 'RETURN_SALES_DIS',
@@ -453,6 +438,21 @@ class ExtendedAccountMove(models.Model):
                     # if not self.sent_to_oracle and self.discount_rate > 0:
                     #     RequestSender(journal_api_url, payload=payload).post()
 
+                # journal_item_receivable_accounts = move.line_ids[-1]
+                #
+                # self.env['sales.transaction'].sudo().create({
+                #     'entity_name': 'Build Best',
+                #     'trx_date': self.invoice_date,
+                #     'cr_amount': journal_item_receivable_accounts.debit,
+                #     'dr_amount': journal_item_receivable_accounts.debit,
+                #     'transaction_type': 'RETURN_SALES_REC',
+                #     'discount_rate': self.discount_rate,
+                #     'journal_id': move.journal_id.id,
+                #     'description': f"RefNo: {move.invoice_origin}",
+                #     'invoice_origin': move.invoice_origin,
+                #     'attribute_1': self.name
+                # })
+
                 journal_item_receivable_accounts = move.line_ids[-1]
 
                 self.env['sales.transaction'].sudo().create({
@@ -463,7 +463,7 @@ class ExtendedAccountMove(models.Model):
                     'transaction_type': 'REFUND_SALES_REC',
                     'discount_rate': self.discount_rate,
                     'journal_id': move.journal_id.id,
-                    'description': f"RefNo: {move.invoice_origin}",
+                    'description': f"RefNo: {move.invoice_origin}. REFUND_SALES_REC with sales recievable value of {journal_item_receivable_accounts.credit}",
                     'invoice_origin': move.invoice_origin,
                     'attribute_1': self.name
                 })

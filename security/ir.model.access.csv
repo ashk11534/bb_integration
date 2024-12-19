@@ -1,4 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_bb_influencer_user,bb.influencer.user,model_bb_influencer,base.group_user,1,1,1,1
-access_sales_transaction,access_sales_transaction,model_sales_transaction,base.group_user,1,1,1,1
-access_sales_transaction_op,access_sales_transaction_op,model_sales_transaction_op,base.group_user,1,1,1,1
+access_sales_transaction,access_sales_transaction,model_sales_transaction,,1,1,1,1
+access_sales_transaction_op,access_sales_transaction_op,model_sales_transaction_op,,1,1,1,1

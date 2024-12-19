@@ -20,4 +20,18 @@ class SaleOrderInherit(models.Model):
             'attribute_1': self.name
         })
 
+        if self.discount_rate:
+            self.env['sales.transaction'].sudo().create({
+                'entity_name': 'Build Best',
+                'trx_date': self.date_order,
+                'cr_amount': self.amount_discount,
+                'dr_amount': self.amount_discount,
+                'transaction_type': 'SALES_DIS',
+                'discount_rate': self.discount_rate,
+                'journal_id': None,
+                'description': f"RefNo: {self.name}",
+                'invoice_origin': self.name,
+                'attribute_1': self.name
+            })
+
         return res

@@ -794,4 +794,64 @@ class SalesRevenueScheduler(models.Model):
 
                     sales_revenue.output_payload = op_obj.id
 
+class SalesReceivableScheduler(models.Model):
+    _name = 'sales.receivable.scheduler'
+    _description = 'Sales receivable scheduler'
+
+    serializer = JournalSerializer()
+    journal_api_url = f"{BASE_URL_PWC}/webservices/rest/pos_details/pos_journal_import/?"
+
+    def send_sales_receivable(self):
+
+        sales_revenues = self.env['sales.transaction'].sudo().search([('transaction_type', '=', 'SALES_REC')])
+
+        for sales_revenue in sales_revenues:
+
+            input_payload = {
+                'oracle_pointer': sales_revenue.transaction_type,
+                'total_credit_amount': sales_revenue.cr_amount,
+                'total_debit_amount': sales_revenue.dr_amount,
+                'txn_date': sales_revenue.trx_date,
+                'company_name': sales_revenue.entity_name,
+                'journal_id': sales_revenue.journal_id,
+                'order_reference': sales_revenue.invoice_origin,
+                'invoice_reference': sales_revenue.attribute_1
+            }
+
+            if not sales_revenue.sent_to_oracle:
+                payload = self.serializer.serialize([input_payload])
+                print(payload)
+                res = RequestSender(self.journal_api_url, payload=payload).post()
+
+                if res != False:
+                    sales_revenue.sent_to_oracle = True
+
+                    output_payload = res.get('OutputParameters').get('P_OUTPJLTABTYP').get('P_OUTPJLTABTYP_ITEM')[0]
+
+                    parsed_date = parser.isoparse(output_payload.get('TRX_DATE'))
+
+                    utc_date = parsed_date.astimezone(pytz.utc)
+
+                    naive_utc_date = utc_date.replace(tzinfo=None)
+
+                    op_obj = self.env['sales.transaction.op'].sudo().create({
+                        'entity_name': output_payload.get('ENTITY_NAME'),
+                        'trx_date': naive_utc_date,
+                        'cr_amount': output_payload.get('CR_AMOUNT'),
+                        'dr_amount': output_payload.get('DR_AMOUNT'),
+                        'transaction_type': output_payload.get('TRANSACTION_TYPE'),
+                        'description': output_payload.get('DESCRIPTION'),
+                        'r_status': output_payload.get('R_STATUS'),
+                        'r_msg': output_payload.get('R_MSG'),
+                        'attribute_1': output_payload.get('ATTRIBUTE1'),
+                        'attribute_2': output_payload.get('ATTRIBUTE2'),
+                        'attribute_3': output_payload.get('ATTRIBUTE3'),
+                        'attribute_4': output_payload.get('ATTRIBUTE4')
+                    })
+
+                    sales_revenue.output_payload = op_obj.id
+
+
+
+
 
