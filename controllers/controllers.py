@@ -1,6 +1,7 @@
 import json
 from logging import getLogger
 from odoo import http
+from odoo.http import request as req
 from ..utils import authKeyRequired, logTracer
 
 _logger = getLogger(__name__)
@@ -141,3 +142,23 @@ class SyncInventoryController(http.Controller):
         except Exception as exc:
             _logger.error("Failed to Create Item with error %s", str(exc))
             return
+
+
+    @http.route('/rough-test-endpoint', auth='public', type='http')
+    def rough_test_endpoint(self):
+        product_category = req.env['product.category'].sudo().search([('name', '=', 'ALMIRAH')])
+
+        full_category_name = ''
+
+        _parent_id = product_category.parent_id
+
+        while _parent_id:
+            full_category_name += _parent_id.name + ('/' if _parent_id.parent_id else '')
+            _parent_id = _parent_id.parent_id
+
+        full_category_name = list(full_category_name.split('/').__reversed__())
+        full_category_name.append(product_category.name)
+
+        full_category_name = '/'.join(full_category_name)
+
+        print(full_category_name)
